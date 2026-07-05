@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed:images": "node scripts/seed-cloudinary.mjs",
-    "verify:deploy": "node scripts/verify-deploy-env.mjs"
+    "verify:deploy": "node scripts/verify-deploy-env.mjs",
+    "prepare:vercel": "node scripts/prepare-vercel-env.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

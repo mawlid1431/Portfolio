@@ -36,16 +36,9 @@ function runConvexDeploy() {
 
 if (isVercel) {
   if (convexDeployment) {
-    console.error(
-      [
-        "Convex build failed: CONVEX_DEPLOYMENT must not be set on Vercel.",
-        "",
-        `Found: CONVEX_DEPLOYMENT=${convexDeployment}`,
-        "",
-        "Remove CONVEX_DEPLOYMENT from Vercel, then redeploy.",
-      ].join("\n"),
+    console.warn(
+      `Ignoring CONVEX_DEPLOYMENT on Vercel (${convexDeployment}). Remove it from Vercel env vars.`,
     );
-    process.exit(1);
   }
 
   if (deployKey) {
