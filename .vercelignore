@@ -1,0 +1,4 @@
+.env.local
+dev.log
+.claude
+*.tsbuildinfo

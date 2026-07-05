@@ -1,0 +1,436 @@
+@import "tailwindcss";
+
+/* dark theme (default) */
+:root {
+  --ink: #070707;
+  --ink-soft: #0e0f0e;
+  --emerald-glow: #10b981;
+  --emerald-bright: #34d399;
+  --cream: #f2ecdf;
+  --cream-dim: #b8b2a4;
+
+  /* fluid glass button */
+  --glass-base: #050505;
+  --glass-tint: #c2c2c2;
+  --glass-text: #f2ecdf;
+  --glass-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  --glass-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.55);
+  --glass-rim: rgba(255, 255, 255, 0.22);
+}
+
+/* light theme — warm cream / paper */
+html.light {
+  --ink: #f4eee1;
+  --ink-soft: #fdfaf2;
+  --emerald-glow: #0d9f6e;
+  --emerald-bright: #047857;
+  --cream: #16150f;
+  --cream-dim: #6b6558;
+
+  --glass-base: #ebe4d6;
+  --glass-tint: #5c574c;
+  --glass-text: #16150f;
+  --glass-inset:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 10px 28px -12px rgba(22, 21, 15, 0.18);
+  --glass-rim: rgba(255, 255, 255, 0.85);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-emerald-glow: var(--emerald-glow);
+  --color-emerald-bright: var(--emerald-bright);
+  --color-cream: var(--cream);
+  --color-cream-dim: var(--cream-dim);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--font-body), system-ui, sans-serif;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--emerald-glow) 25%, transparent);
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
+}
+
+/* safe-area for notched phones */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* 16px inputs prevent iOS zoom on focus */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display), Impact, sans-serif;
+}
+
+::selection {
+  background: var(--emerald-glow);
+  color: var(--ink);
+}
+
+/* thin emerald scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--emerald-glow) 35%, transparent);
+  border-radius: 3px;
+}
+
+/* hero letter reveal */
+@keyframes letter-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.6em) rotateX(70deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+/* slow float for ambient orbs */
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4%, -6%) scale(1.08);
+  }
+}
+
+.orb {
+  animation: drift 14s ease-in-out infinite;
+}
+
+/* marquee strip */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 28s linear infinite;
+}
+
+/* emerald rim glow behind portrait */
+.rim-glow {
+  box-shadow:
+    0 0 60px 4px color-mix(in srgb, var(--emerald-glow) 25%, transparent),
+    0 0 160px 20px color-mix(in srgb, var(--emerald-glow) 12%, transparent);
+}
+
+/* loading bar sweep */
+@keyframes loading-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(200%);
+  }
+}
+
+.loading-bar {
+  animation: loading-sweep 1.2s ease-in-out infinite;
+}
+
+/* card hover lift */
+.work-card {
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.work-card:hover {
+  transform: translateY(-10px) rotate(-1deg);
+  box-shadow: 0 24px 60px -20px rgba(16, 185, 129, 0.35);
+}
+.work-card:active {
+  transform: scale(0.98);
+}
+@media (hover: hover) {
+  .work-card:hover {
+    transform: translateY(-10px) rotate(-1deg);
+  }
+}
+
+/* ── Fluid glass buttons (Framer-inspired) ── */
+.glass-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  line-height: 1.15;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--glass-text);
+  text-shadow: 0 2px 10px color-mix(in srgb, var(--glass-tint) 35%, transparent);
+  background: var(--glass-base);
+  box-shadow: var(--glass-inset), var(--glass-shadow);
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s ease,
+    color 0.3s ease;
+  overflow: hidden;
+  isolation: isolate;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.glass-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      ellipse 90% 55% at 18% 0%,
+      color-mix(in srgb, var(--glass-tint) 38%, transparent),
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 70% 45% at 82% 100%,
+      color-mix(in srgb, var(--glass-tint) 28%, transparent),
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in srgb, var(--glass-tint) 12%, transparent),
+      transparent 70%
+    );
+  opacity: 0.65;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.4s ease;
+}
+
+.glass-btn::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    var(--glass-rim) 48%,
+    transparent 62%
+  );
+  background-size: 220% 100%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.35;
+  animation: glass-shimmer-idle 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-btn:hover {
+  z-index: 10;
+  transform: scale(1.02);
+  box-shadow:
+    var(--glass-inset),
+    0 16px 40px -12px color-mix(in srgb, var(--glass-tint) 25%, transparent);
+}
+
+.glass-btn:hover::before {
+  opacity: 0.95;
+}
+
+.glass-btn:hover::after {
+  opacity: 0.85;
+  animation: glass-shimmer-hover 1.4s ease-in-out infinite;
+}
+
+.glass-btn:active {
+  transform: scale(0.96);
+}
+
+.glass-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
+
+.glass-btn-label {
+  position: relative;
+  z-index: 1;
+}
+
+.glass-btn-sm {
+  padding: 0.3125rem 0.875rem;
+  font-size: 0.5625rem;
+  min-height: 2rem;
+}
+
+.glass-btn-md {
+  padding: 0.4375rem 1.125rem;
+  font-size: 0.625rem;
+  min-height: 2.125rem;
+}
+
+.glass-btn-lg {
+  padding: 0.5625rem 1.5rem;
+  font-size: 0.6875rem;
+  min-height: 2.25rem;
+}
+
+.glass-btn-icon {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  font-size: 0.875rem;
+  letter-spacing: 0;
+}
+
+/* emerald glass fill */
+.glass-btn-primary,
+.glass-btn-accent {
+  --glass-base: #040404;
+  --glass-tint: var(--emerald-bright);
+  color: #f2ecdf;
+}
+
+html.light .glass-btn-primary,
+html.light .glass-btn-accent {
+  --glass-base: #0a1210;
+  --glass-tint: #34d399;
+  color: #f4eee1;
+}
+
+.glass-btn-accent {
+  --glass-tint: var(--emerald-glow);
+}
+
+/* frosted outline */
+.glass-btn-ghost {
+  --glass-base: color-mix(in srgb, var(--ink-soft) 72%, transparent);
+  --glass-tint: var(--emerald-glow);
+  color: var(--cream-dim);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+
+html.light .glass-btn-ghost {
+  --glass-base: color-mix(in srgb, white 55%, transparent);
+  color: var(--cream-dim);
+}
+
+.glass-btn-ghost:hover {
+  color: var(--emerald-bright);
+}
+
+/* destructive */
+.glass-btn-danger {
+  --glass-base: #120808;
+  --glass-tint: #f87171;
+  color: #fca5a5;
+}
+
+html.light .glass-btn-danger {
+  --glass-base: #f5e8e8;
+  --glass-tint: #dc2626;
+  color: #b91c1c;
+}
+
+@keyframes glass-shimmer-idle {
+  0%,
+  100% {
+    background-position: 180% 0;
+  }
+  50% {
+    background-position: 20% 0;
+  }
+}
+
+@keyframes glass-shimmer-hover {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* compact glass chip for badges */
+.glass-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.1875rem 0.5625rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background: color-mix(in srgb, var(--ink-soft) 80%, transparent);
+  box-shadow: var(--glass-inset);
+  color: var(--cream-dim);
+  backdrop-filter: blur(10px);
+}
+
+html.light .glass-pill {
+  background: color-mix(in srgb, white 65%, transparent);
+}
+
+.glass-pill-accent {
+  --glass-tint: var(--emerald-glow);
+  color: var(--emerald-bright);
+  background: color-mix(in srgb, var(--emerald-glow) 12%, var(--ink-soft));
+}
