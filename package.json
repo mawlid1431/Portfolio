@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "bunx convex deploy --cmd 'bun run build:app'",
+    "build": "node scripts/vercel-build.mjs",
     "build:app": "next build",
     "build:local": "next build",
     "start": "next start",
