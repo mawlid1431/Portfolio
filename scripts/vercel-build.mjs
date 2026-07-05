@@ -12,16 +12,27 @@ const convexDeployment = process.env.CONVEX_DEPLOYMENT?.trim();
 
 if (isVercel) {
   if (!deployKey) {
+    const convexVars = Object.keys(process.env)
+      .filter((key) => key.includes("CONVEX"))
+      .sort();
+
     console.error(
       [
         "Convex build failed: CONVEX_DEPLOY_KEY is missing on Vercel.",
         "",
+        convexVars.length
+          ? `Convex-related vars found (wrong names?): ${convexVars.join(", ")}`
+          : "No CONVEX_* variables found at all — nothing was imported to Vercel.",
+        "",
         "Fix:",
-        "  1. Convex Dashboard → Production deployment → Settings → General",
+        "  1. Convex Dashboard → Production tab → Settings → General",
         "  2. Generate Production Deploy Key (enable deployment:deploy)",
-        "  3. Vercel → Settings → Environment Variables",
-        "  4. Add CONVEX_DEPLOY_KEY for the Production environment",
-        "  5. Redeploy (env changes do not apply to past builds)",
+        "  3. Vercel → your Portfolio project → Settings → Environment Variables",
+        "  4. Add NEW variable:",
+        "       Name:  CONVEX_DEPLOY_KEY",
+        "       Value: paste the full key",
+        "       Environments: check Production only",
+        "  5. Save, then Redeploy (not just push — use Deployments → Redeploy)",
         "",
         "Do NOT set CONVEX_DEPLOYMENT on Vercel.",
       ].join("\n"),
