@@ -38,6 +38,7 @@ dev.log
 .env.development
 .env*.local
 !.env.example
+!.env.vercel
 
 # vercel
 .vercel

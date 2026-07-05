@@ -50,6 +50,24 @@ if (isVercel) {
       "Warning: NEXT_PUBLIC_CONVEX_URL points at the dev deployment. Remove it from Vercel so convex deploy can inject the production URL.",
     );
   }
+
+  const result = spawnSync(
+    "bunx",
+    ["convex", "deploy", "--cmd", "bun run build:app"],
+    { stdio: "inherit", shell: true },
+  );
+  process.exit(result.status ?? 1);
+}
+
+if (!deployKey) {
+  console.warn(
+    "CONVEX_DEPLOY_KEY not set — building Next.js only (Convex not deployed).",
+  );
+  const result = spawnSync("bun", ["run", "build:app"], {
+    stdio: "inherit",
+    shell: true,
+  });
+  process.exit(result.status ?? 1);
 }
 
 const result = spawnSync(

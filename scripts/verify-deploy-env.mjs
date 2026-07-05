@@ -17,11 +17,15 @@ const required = [
   "NEXT_PUBLIC_SITE_URL",
 ];
 
+const requiredLocal = ["NEXT_PUBLIC_CONVEX_URL", ...required];
+
 const convexDashboard = [
   "ADMIN_SETUP_KEY (Convex production environment — Settings → Environment Variables)",
 ];
 
-const missing = required.filter((key) => !process.env[key]?.trim());
+const missing = (process.env.VERCEL === "1" ? required : requiredLocal).filter(
+  (key) => !process.env[key]?.trim(),
+);
 const missingVercel = vercelOnly.filter((key) => !process.env[key]?.trim());
 
 let failed = false;
