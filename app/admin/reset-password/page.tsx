@@ -10,21 +10,55 @@ import { useSubmitLock } from "@/lib/useSubmitLock";
 const codeClass =
   "w-full rounded-xl border border-cream/15 bg-ink px-5 py-4 text-center text-2xl font-mono tracking-[0.45em] text-cream outline-none transition-colors focus:border-emerald-bright";
 
+const inputClass =
+  "w-full rounded-xl border border-cream/15 bg-ink px-5 py-4 text-sm text-cream outline-none transition-colors focus:border-emerald-bright";
+
 function ResetPasswordForm() {
   const router = useRouter();
   const params = useSearchParams();
   const initialEmail = params.get("email") ?? "";
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [step, setStep] = useState<"verify" | "password">("verify");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+  const [verifiedCode, setVerifiedCode] = useState("");
   const { loading, run } = useSubmitLock();
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const onVerifyCode = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
     const data = new FormData(e.currentTarget);
     const email = String(data.get("email") ?? "").trim().toLowerCase();
     const code = String(data.get("code") ?? "").trim();
+
+    await run(async () => {
+      const res = await fetch("/api/auth/verify-reset-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      });
+
+      if (!res.ok) {
+        const body = (await res.json()) as { error?: string };
+        throw new Error(body.error ?? "Invalid or expired reset code");
+      }
+
+      setVerifiedEmail(email);
+      setVerifiedCode(code);
+      setStep("password");
+    }).catch((err: unknown) => {
+      setError(
+        err instanceof Error ? err.message : "Invalid or expired reset code",
+      );
+    });
+  };
+
+  const onSetPassword = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+
+    const data = new FormData(e.currentTarget);
     const newPassword = String(data.get("newPassword") ?? "");
     const confirmPassword = String(data.get("confirmPassword") ?? "");
 
@@ -37,7 +71,12 @@ function ResetPasswordForm() {
       const res = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code, newPassword, confirmPassword }),
+        body: JSON.stringify({
+          email: verifiedEmail,
+          code: verifiedCode,
+          newPassword,
+          confirmPassword,
+        }),
       });
 
       if (!res.ok) {
@@ -63,46 +102,86 @@ function ResetPasswordForm() {
     );
   }
 
-  return (
-    <form onSubmit={onSubmit} className="mt-10 flex flex-col gap-5">
-      <div>
-        <label
-          htmlFor="email"
-          className="mb-2 block text-xs uppercase tracking-[0.25em] text-cream-dim"
-        >
-          Admin email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          defaultValue={initialEmail}
-          autoComplete="email"
-          className="w-full rounded-xl border border-cream/15 bg-ink px-5 py-4 text-sm text-cream outline-none transition-colors focus:border-emerald-bright"
-        />
-      </div>
+  if (step === "verify") {
+    return (
+      <form onSubmit={onVerifyCode} className="mt-10 flex flex-col gap-5">
+        <p className="text-sm text-cream-dim">
+          Enter your admin email and the 6-digit code from your inbox. Codes
+          expire in 15 minutes.
+        </p>
 
-      <div>
-        <label
-          htmlFor="code"
-          className="mb-2 block text-xs uppercase tracking-[0.25em] text-cream-dim"
+        <div>
+          <label
+            htmlFor="email"
+            className="mb-2 block text-xs uppercase tracking-[0.25em] text-cream-dim"
+          >
+            Admin email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            defaultValue={initialEmail}
+            autoComplete="email"
+            className={inputClass}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="code"
+            className="mb-2 block text-xs uppercase tracking-[0.25em] text-cream-dim"
+          >
+            6-digit reset code
+          </label>
+          <input
+            id="code"
+            name="code"
+            type="text"
+            inputMode="numeric"
+            pattern="\d{6}"
+            maxLength={6}
+            required
+            placeholder="••••••"
+            autoComplete="one-time-code"
+            className={codeClass}
+          />
+        </div>
+
+        {error && (
+          <p className="text-xs text-red-400" role="alert">
+            {error}
+          </p>
+        )}
+
+        <GlassButton
+          type="submit"
+          variant="accent"
+          size="md"
+          className="mt-2"
+          disabled={loading}
         >
-          6-digit reset code
-        </label>
-        <input
-          id="code"
-          name="code"
-          type="text"
-          inputMode="numeric"
-          pattern="\d{6}"
-          maxLength={6}
-          required
-          placeholder="••••••"
-          autoComplete="one-time-code"
-          className={codeClass}
-        />
-      </div>
+          {loading ? "Verifying…" : "Verify code"}
+        </GlassButton>
+
+        <Link
+          href="/admin"
+          className="text-center text-xs text-cream-dim underline transition-colors hover:text-emerald-bright"
+        >
+          Back to sign in
+        </Link>
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={onSetPassword} className="mt-10 flex flex-col gap-5">
+      <p className="text-sm text-cream-dim">
+        Code verified for{" "}
+        <span className="text-cream">{verifiedEmail}</span>. Choose a new
+        password below.
+      </p>
 
       <PasswordInput
         id="newPassword"
@@ -128,16 +207,28 @@ function ResetPasswordForm() {
         </p>
       )}
 
-      <GlassButton type="submit" variant="accent" size="md" className="mt-2" disabled={loading}>
+      <GlassButton
+        type="submit"
+        variant="accent"
+        size="md"
+        className="mt-2"
+        disabled={loading}
+      >
         {loading ? "Saving…" : "Set new password"}
       </GlassButton>
 
-      <Link
-        href="/admin"
+      <button
+        type="button"
+        onClick={() => {
+          setStep("verify");
+          setVerifiedEmail("");
+          setVerifiedCode("");
+          setError("");
+        }}
         className="text-center text-xs text-cream-dim underline transition-colors hover:text-emerald-bright"
       >
-        Back to sign in
-      </Link>
+        Use a different code
+      </button>
     </form>
   );
 }
@@ -150,9 +241,11 @@ export default function ResetPasswordPage() {
           MALITOS<span className="text-emerald-bright">.</span>
         </p>
         <h1 className="mt-2 text-xs uppercase tracking-[0.3em] text-cream-dim">
-          Set new password
+          Reset password
         </h1>
-        <Suspense fallback={<p className="mt-10 text-sm text-cream-dim">Loading…</p>}>
+        <Suspense
+          fallback={<p className="mt-10 text-sm text-cream-dim">Loading…</p>}
+        >
           <ResetPasswordForm />
         </Suspense>
       </div>

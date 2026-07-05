@@ -43,35 +43,56 @@ export const me = query({
   },
 });
 
+const RESET_CODE_TTL_MS = 15 * 60 * 1000;
+
 export const requestPasswordReset = mutation({
   args: {
     email: v.string(),
     tokenHash: v.string(),
     rateLimitKey: v.string(),
   },
-  returns: v.union(v.string(), v.null()),
+  returns: v.string(),
   handler: async (ctx, args) => {
-    const allowed = await checkRateLimit(ctx, args.rateLimitKey, 3, 60 * 60 * 1000);
-    if (!allowed) {
-      throw new Error("Too many reset requests. Try again in an hour.");
-    }
-
     const admin = await ctx.db
       .query("admins")
       .withIndex("by_email", (q) => q.eq("email", args.email.toLowerCase()))
       .unique();
 
-    if (!admin) return null;
+    if (!admin) {
+      throw new Error("This user does not exist. Try again.");
+    }
+
+    const allowed = await checkRateLimit(ctx, args.rateLimitKey, 3, 60 * 60 * 1000);
+    if (!allowed) {
+      throw new Error("Too many reset requests. Try again in an hour.");
+    }
 
     const now = Date.now();
     await ctx.db.insert("passwordResetTokens", {
       adminId: admin._id,
       tokenHash: args.tokenHash,
-      expiresAt: now + 60 * 60 * 1000,
+      expiresAt: now + RESET_CODE_TTL_MS,
       createdAt: now,
     });
 
     return admin.email;
+  },
+});
+
+export const verifyPasswordResetCode = query({
+  args: { tokenHash: v.string() },
+  returns: v.boolean(),
+  handler: async (ctx, args) => {
+    const resetToken = await ctx.db
+      .query("passwordResetTokens")
+      .withIndex("by_token", (q) => q.eq("tokenHash", args.tokenHash))
+      .unique();
+
+    return !!(
+      resetToken &&
+      !resetToken.usedAt &&
+      resetToken.expiresAt >= Date.now()
+    );
   },
 });
 

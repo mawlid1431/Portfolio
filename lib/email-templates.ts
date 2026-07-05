@@ -80,13 +80,13 @@ export function passwordResetCodeEmail({ code }: { code: string }) {
     <p style="margin:0 0 16px;color:#d1d5db;">We received a request to reset your Malitos admin password.</p>
     <p style="margin:0 0 8px;color:#9ca3af;font-size:13px;">Enter this 6-digit code on the reset page:</p>
     <p style="margin:0 0 24px;font-size:32px;font-weight:bold;letter-spacing:0.35em;color:${brand.emerald};font-family:monospace;">${escapeHtml(code)}</p>
-    <p style="margin:0 0 8px;color:#9ca3af;font-size:13px;">This code expires in 1 hour. If you didn't request this, ignore this email.</p>
+    <p style="margin:0 0 8px;color:#9ca3af;font-size:13px;">This code expires in 15 minutes. If you didn't request this, ignore this email.</p>
     <p style="margin:16px 0 0;color:#6b7280;font-size:12px;">Never share this code with anyone.</p>
   `;
   return {
     subject: "Your Malitos admin reset code",
     html: layout("Password reset code", body),
-    text: `Your Malitos admin reset code: ${code}\n\nThis code expires in 1 hour. Never share it with anyone.`,
+    text: `Your Malitos admin reset code: ${code}\n\nThis code expires in 15 minutes. Never share it with anyone.`,
   };
 }
 

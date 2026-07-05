@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PasswordInput from "@/components/PasswordInput";
@@ -111,6 +112,25 @@ export default function SettingsPanel() {
 
   return (
     <div className="flex flex-col gap-8">
+      <div className={`${cardClass} flex flex-col gap-4`}>
+        <h2 className="text-xs uppercase tracking-[0.3em] text-emerald-bright">
+          Email templates
+        </h2>
+        <p className="text-sm text-cream-dim">
+          Preview transactional emails and send a test to your inbox.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/admin/dashboard/email-preview" className={btnPrimary}>
+            Open email preview
+          </Link>
+          {process.env.NODE_ENV === "development" && (
+            <Link href="/dev/email-preview" className={btnGhost}>
+              Dev preview (no login)
+            </Link>
+          )}
+        </div>
+      </div>
+
       <form onSubmit={onChangePassword} className={`${cardClass} flex flex-col gap-4`}>
         <h2 className="text-xs uppercase tracking-[0.3em] text-emerald-bright">
           Change password

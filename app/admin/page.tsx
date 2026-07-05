@@ -165,7 +165,7 @@ export default function AdminLoginPage() {
             </p>
             <p className="mt-3 text-xs text-cream-dim">
               Check your inbox and enter the code on the reset page. The code
-              expires in 1 hour.
+              expires in 15 minutes.
             </p>
             <GlassButton
               href={`/admin/reset-password?email=${encodeURIComponent(forgotEmail)}`}

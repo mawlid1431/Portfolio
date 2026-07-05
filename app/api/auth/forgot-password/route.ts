@@ -33,27 +33,29 @@ export async function POST(request: Request) {
       rateLimitKey: rateLimitKey("forgot", `${ip}:${email}`),
     });
 
-    if (adminEmail) {
-      const template = passwordResetCodeEmail({ code });
-      await sendEmail({
-        to: adminEmail,
-        subject: template.subject,
-        text: template.text,
-        html: template.html,
-      });
-    }
+    const template = passwordResetCodeEmail({ code });
+    await sendEmail({
+      to: adminEmail,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
 
-    // Always succeed to prevent email enumeration
     return NextResponse.json({
       ok: true,
-      maskedEmail: maskEmail(email),
+      maskedEmail: maskEmail(adminEmail),
     });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to send reset email";
-    // Generic message — don't leak rate-limit internals
-    const safe =
-      message.includes("Too many") ? message : "Failed to send reset email.";
+
+    if (message.includes("does not exist")) {
+      return NextResponse.json({ error: message }, { status: 404 });
+    }
+
+    const safe = message.includes("Too many")
+      ? message
+      : "Failed to send reset email.";
     return NextResponse.json({ error: safe }, { status: 400 });
   }
 }

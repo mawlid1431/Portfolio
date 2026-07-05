@@ -104,7 +104,7 @@ export const completePasswordReset = internalMutation({
       .unique();
 
     if (!resetToken || resetToken.usedAt || resetToken.expiresAt < Date.now()) {
-      throw new Error("Invalid or expired reset link");
+      throw new Error("Invalid or expired reset code");
     }
 
     await ctx.db.patch("admins", resetToken.adminId, {
