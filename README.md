@@ -8,6 +8,8 @@
 [![Bun](https://img.shields.io/badge/Bun-package_manager-000)](https://bun.sh/)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000)](https://vercel.com/)
 
+> **Diagrams:** All architecture charts use [Mermaid](https://mermaid.js.org/). They render as graphics on **GitHub** when you open this README in the repo. Vercel and other hosts show the raw code blocks unless Mermaid is enabled.
+
 ---
 
 ## Documentation index
@@ -115,18 +117,18 @@ flowchart TB
     Browser["Browser / Mobile"]
   end
 
-  subgraph Vercel["Vercel — Next.js 16"]
+  subgraph Vercel["Vercel - Next.js 16"]
     Pages["App Router Pages"]
     AdminUI["Admin UI"]
-    API["API Routes /api/*"]
+    API["API Routes"]
     MW["Middleware"]
-    SSR["Server Components<br/>cms-server · projects-server"]
+    SSR["Server Components"]
   end
 
-  subgraph Convex["Convex Cloud"]
+  subgraph ConvexCloud["Convex Cloud"]
     Q["Queries"]
     M["Mutations"]
-    A["Actions"]
+    Act["Actions"]
     DB[("Document DB")]
   end
 
@@ -135,13 +137,23 @@ flowchart TB
     SMTP["Gmail SMTP"]
   end
 
-  Browser --> Pages & AdminUI & API
-  Pages & AdminUI --> MW
-  Pages --> SSR --> Q
-  AdminUI --> Q & M
-  API --> A & Q & M
-  Q & M & A --> DB
-  API --> CL & SMTP
+  Browser --> Pages
+  Browser --> AdminUI
+  Browser --> API
+  Pages --> MW
+  AdminUI --> MW
+  Pages --> SSR
+  SSR --> Q
+  AdminUI --> Q
+  AdminUI --> M
+  API --> Act
+  API --> Q
+  API --> M
+  Q --> DB
+  M --> DB
+  Act --> DB
+  API --> CL
+  API --> SMTP
   Pages --> CL
 ```
 
@@ -158,20 +170,20 @@ flowchart TB
 ```mermaid
 flowchart LR
   subgraph Public["Public routes"]
-    H["/"]
-    A["/about"]
-    P["/projects"]
-    PS["/projects/slug"]
-    C["/contact"]
-    PR["/privacy"]
-    T["/terms"]
+    H["Home"]
+    Ab["About"]
+    P["Projects"]
+    PS["Project detail"]
+    C["Contact"]
+    PR["Privacy"]
+    T["Terms"]
     NF["404"]
   end
 
-  subgraph Admin["Admin routes"]
-    AL["/admin"]
-    AD["/admin/dashboard"]
-    AR["/admin/reset-password"]
+  subgraph AdminRoutes["Admin routes"]
+    AL["Login"]
+    AD["Dashboard"]
+    AR["Reset password"]
   end
 
   subgraph CMS["Dashboard panels"]
@@ -185,7 +197,14 @@ flowchart LR
     ST["Settings"]
   end
 
-  AD --> O & PJ & IM & EX & MG & FQ & SO & ST
+  AD --> O
+  AD --> PJ
+  AD --> IM
+  AD --> EX
+  AD --> MG
+  AD --> FQ
+  AD --> SO
+  AD --> ST
   AL --> AD
   AL --> AR
 ```
@@ -194,18 +213,17 @@ flowchart LR
 
 ```mermaid
 sequenceDiagram
-  autonumber
   participant U as User
   participant N as Next.js Server
   participant C as Convex
   participant CL as Cloudinary
 
-  U->>N: GET /projects
+  U->>N: GET projects page
   N->>C: projects.listPublic
   alt CMS has data
     C-->>N: Project documents
   else Empty CMS
-    N->>N: Fallback lib/data.ts
+    N->>N: Fallback to static data
   end
   N->>N: Build image URLs
   N-->>U: HTML response
@@ -240,7 +258,7 @@ erDiagram
   admins ||--o{ passwordResetTokens : has
 
   admins {
-    string email UK
+    string email
     string passwordHash
     string name
     number createdAt
@@ -248,8 +266,8 @@ erDiagram
   }
 
   sessions {
-    id adminId FK
-    string tokenHash UK
+    string adminId
+    string tokenHash
     string deviceLabel
     string userAgent
     string ipHash
@@ -257,18 +275,18 @@ erDiagram
   }
 
   projects {
-    string slug UK
+    string slug
     string title
     string pitch
     string tag
     number year
     string imagePath
     boolean featured
-    enum status
+    string status
   }
 
   siteImages {
-    string key UK
+    string key
     string label
     string cloudinaryPath
   }
@@ -302,19 +320,19 @@ erDiagram
   }
 
   passwordResetTokens {
-    id adminId FK
-    string tokenHash UK
+    string adminId
+    string tokenHash
     number expiresAt
   }
 
   rateLimits {
-    string key UK
+    string key
     number count
     number windowStart
   }
 
   idempotencyKeys {
-    string key UK
+    string key
     string resultId
     number expiresAt
   }
@@ -374,14 +392,14 @@ erDiagram
 
 ```mermaid
 sequenceDiagram
-  participant U as Visitor
+  participant U as User
   participant F as ContactForm
-  participant API as POST /api/contact
+  participant API as Contact API
   participant C as Convex
   participant E as Gmail
 
-  U->>F: Fill form + submit
-  F->>API: JSON + idempotencyKey
+  U->>F: Fill form and submit
+  F->>API: POST contact JSON
   API->>C: Check rate limit
   API->>C: messages.create
   API->>E: Email to CONTACT_TO
@@ -395,17 +413,17 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
   participant A as Admin
-  participant L as POST /api/auth/login
-  participant C as authActions.login
+  participant L as Login API
+  participant C as Convex Login Action
   participant DB as Convex DB
 
-  A->>L: email + password
+  A->>L: email and password
   L->>L: IP rate limit key
-  L->>C: login(tokenHash, ...)
+  L->>C: login with tokenHash
   C->>DB: Verify bcrypt hash
   C->>DB: Insert session
   L->>L: Set httpOnly cookie
-  L-->>A: 200 → redirect dashboard
+  L-->>A: Redirect to dashboard
 ```
 
 ## 4.3 Password reset flow
@@ -415,32 +433,32 @@ sequenceDiagram
   participant A as Admin
   participant F as Forgot password UI
   participant R as Reset page
-  participant API as API routes
+  participant API as Auth API
   participant C as Convex
   participant E as Email
 
   A->>F: Enter email
-  F->>API: POST /api/auth/forgot-password
-  API->>C: requestPasswordReset (hashed code)
-  API->>E: 6-digit code email
+  F->>API: POST forgot-password
+  API->>C: requestPasswordReset
+  API->>E: Send 6-digit code
   API-->>F: maskedEmail display
-  A->>R: email + code + new password
-  R->>API: POST /api/auth/reset-password
+  A->>R: email code new password
+  R->>API: POST reset-password
   API->>C: resetPassword action
-  API-->>A: Success → /admin
+  API-->>A: Success redirect to admin
 ```
 
 ## 4.4 Image upload flow
 
 ```mermaid
 flowchart TD
-  A["Admin picks image"] --> B["POST /api/upload"]
-  B --> C{"Cookie session valid?"}
-  C -->|No| D["401"]
-  C -->|Yes| E{"Folder in devmalitos/*?"}
-  E -->|No| F["400"]
-  E -->|Yes| G{"Type JPEG/PNG/WebP/GIF<br/>and under 8 MB?"}
-  G -->|No| H["400"]
+  A["Admin picks image"] --> B["POST upload API"]
+  B --> C{"Session cookie valid?"}
+  C -->|No| D["401 Unauthorized"]
+  C -->|Yes| E{"Folder is devmalitos?"}
+  E -->|No| F["400 Bad request"]
+  E -->|Yes| G{"Valid image under 8MB?"}
+  G -->|No| H["400 Bad request"]
   G -->|Yes| I["Upload to Cloudinary"]
   I --> J["Return publicId"]
   J --> K["Admin saves to Convex"]
@@ -450,16 +468,16 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  R["/admin/dashboard request"] --> M{"Middleware:<br/>malitos_session cookie?"}
-  M -->|Missing| L["Redirect /admin"]
+  R["Dashboard request"] --> M{"Middleware checks cookie?"}
+  M -->|Missing| L["Redirect to login"]
   M -->|Present| P["Page loads"]
-  P --> Q{"GET /api/auth/me"}
-  Q -->|Invalid session| L
-  Q -->|Valid| CMS["Dashboard + tokenHash"]
+  P --> Q{"GET auth me API"}
+  Q -->|Invalid| L
+  Q -->|Valid| CMS["Dashboard with tokenHash"]
   CMS --> W{"Convex mutation"}
-  W --> V{"assertSession(tokenHash)"}
-  V -->|Fail| E["Error: Unauthorized"]
-  V -->|Pass| OK["Write to DB"]
+  W --> V{"assertSession check"}
+  V -->|Fail| E["Unauthorized error"]
+  V -->|Pass| OK["Write to database"]
 ```
 
 ## 4.6 Development workflow
@@ -471,12 +489,13 @@ flowchart TD
   C --> D["Configure env vars"]
   D --> E["Terminal 1: bunx convex dev"]
   D --> F["Terminal 2: bun dev"]
-  E & F --> G["localhost:3000"]
+  E --> G["localhost:3000"]
+  F --> G
   G --> H{"Admin exists?"}
-  H -->|No| I["POST /api/setup"]
-  H -->|Yes| J["Login /admin"]
+  H -->|No| I["POST setup API"]
+  H -->|Yes| J["Login at admin"]
   I --> J
-  J --> K["Edit CMS → live on site"]
+  J --> K["Edit CMS content live on site"]
 ```
 
 ## 4.7 Production deployment workflow
@@ -497,16 +516,16 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-  subgraph Local[".env.local"]
+  subgraph LocalEnv["Local env file"]
     L1["CONVEX_DEPLOYMENT"]
     L2["NEXT_PUBLIC_CONVEX_URL"]
     L3["All service keys"]
   end
 
-  subgraph Vercel["Vercel production"]
+  subgraph VercelEnv["Vercel production"]
     V1["CONVEX_DEPLOY_KEY"]
     V2["ADMIN_SETUP_KEY"]
-    V3["Cloudinary + SMTP"]
+    V3["Cloudinary and SMTP"]
     V4["NEXT_PUBLIC_SITE_URL"]
   end
 
@@ -786,39 +805,15 @@ devmalitos/
 ## 8.1 CMS panel overview
 
 ```mermaid
-mindmap
-  root((Admin CMS))
-    Overview
-      Project count
-      Message count
-      Quick stats
-    Projects
-      Title slug pitch
-      Year tag status
-      Featured flag
-      Cloudinary image
-    Images
-      Hero portrait
-      Working section
-      Custom keys
-    Experience
-      Role org period
-      Description text
-      Sort order
-    Messages
-      Contact inbox
-      Read unread
-      Delete
-    FAQ
-      Question answer
-      Sort order
-    Socials
-      Label URL
-      Sort order
-    Settings
-      Change password
-      View sessions
-      Revoke sessions
+flowchart TB
+  CMS["Admin CMS"] --> Overview["Overview"]
+  CMS --> Projects["Projects"]
+  CMS --> Images["Images"]
+  CMS --> Experience["Experience"]
+  CMS --> Messages["Messages"]
+  CMS --> FAQ["FAQ"]
+  CMS --> Socials["Socials"]
+  CMS --> Settings["Settings"]
 ```
 
 ## 8.2 Panel-by-panel guide
@@ -871,11 +866,11 @@ Platform name + URL for the footer. Sort order controls display.
 
 ```mermaid
 flowchart LR
-  A["Login /admin"] --> B["Upload images<br/>Images panel"]
-  B --> C["Create projects<br/>Projects panel"]
-  C --> D["Add FAQ + experience<br/>FAQ · Experience panels"]
-  D --> E["Update social links<br/>Socials panel"]
-  E --> F["Visit public site<br/>Content live via SSR"]
+  A["Login admin"] --> B["Upload images"]
+  B --> C["Create projects"]
+  C --> D["Add FAQ and experience"]
+  D --> E["Update social links"]
+  E --> F["Visit public site"]
 ```
 
 ## 8.4 Forgot password (admin)
@@ -979,18 +974,15 @@ bun run verify:deploy
 
 ```mermaid
 flowchart TD
-  subgraph Layers["Defense layers"]
-    L1["1. Middleware — cookie gate on /admin/dashboard"]
-    L2["2. httpOnly cookies — JS cannot read session token"]
-    L3["3. Convex assertSession — every admin mutation verified"]
-    L4["4. Rate limiting — login, contact, password reset"]
-    L5["5. bcrypt 12 rounds — password hashing"]
-    L6["6. HIBP check — breached password rejection"]
-    L7["7. Upload whitelist — devmalitos/* folders only"]
-    L8["8. Security headers — X-Frame-Options, nosniff"]
-    L9["9. Email enumeration protection — forgot password"]
-    L10["10. OTP reset — 6-digit code, SHA-256 hashed, 1h expiry"]
-  end
+  L1["Middleware cookie gate"] --> L2["httpOnly session cookies"]
+  L2 --> L3["Convex assertSession"]
+  L3 --> L4["Rate limiting"]
+  L4 --> L5["bcrypt password hashing"]
+  L5 --> L6["HIBP breach check"]
+  L6 --> L7["Upload folder whitelist"]
+  L7 --> L8["Security headers"]
+  L8 --> L9["Email enumeration protection"]
+  L9 --> L10["OTP reset codes hashed"]
 ```
 
 ## 10.2 Security controls reference
@@ -1080,6 +1072,8 @@ Applied via `font-display` and default body classes in `app/layout.tsx`.
 | CMS changes not on public site | Empty Convex + fallback active | Add content in admin; verify Convex dev is synced |
 | iOS input zoom | Font size under 16px | Already fixed globally in `globals.css` |
 | 404 page missing nav | Old cached build | Rebuild; ensure latest `not-found.tsx` |
+| README diagrams not visible | Viewing on Vercel or raw MD app | Open README on **GitHub.com** in the repo; Mermaid renders there automatically |
+| README shows code not charts | IDE preview or non-GitHub host | Use GitHub web UI, or install a Mermaid preview extension locally |
 
 ## 12.2 Useful debug commands
 
