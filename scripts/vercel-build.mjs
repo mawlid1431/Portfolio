@@ -7,10 +7,14 @@
 
 import { spawnSync } from "node:child_process";
 
+/** Production Convex URL (public — embedded in client bundle). */
+const PROD_CONVEX_URL =
+  "https://mellow-camel-842.eu-west-1.convex.cloud";
+
 const isVercel = process.env.VERCEL === "1";
 const deployKey = process.env.CONVEX_DEPLOY_KEY?.trim();
 const convexDeployment = process.env.CONVEX_DEPLOYMENT?.trim();
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim() ?? "";
+let convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL?.trim() ?? "";
 const isDevConvexUrl = convexUrl.includes("striped-starfish-858");
 
 function runBuildApp() {
@@ -59,26 +63,18 @@ if (isVercel) {
     runBuildApp();
   }
 
-  const convexVars = Object.keys(process.env)
-    .filter((key) => key.includes("CONVEX"))
-    .sort();
-
-  console.error(
+  // Public URL — safe to default when Vercel env vars are not configured yet.
+  process.env.NEXT_PUBLIC_CONVEX_URL = PROD_CONVEX_URL;
+  console.warn(
     [
-      "Convex build failed: set CONVEX_DEPLOY_KEY or NEXT_PUBLIC_CONVEX_URL on Vercel.",
+      "No Convex env on Vercel — using built-in production URL for build.",
+      `NEXT_PUBLIC_CONVEX_URL=${PROD_CONVEX_URL}`,
       "",
-      convexVars.length
-        ? `Convex vars found: ${convexVars.join(", ")}`
-        : "No CONVEX_* variables found — import env vars to Vercel.",
-      "",
-      "Option A (recommended): add CONVEX_DEPLOY_KEY from Convex Production → Settings → General",
-      "Option B (quick fix): add NEXT_PUBLIC_CONVEX_URL=https://mellow-camel-842.eu-west-1.convex.cloud",
-      "",
-      "Also add your other vars (Cloudinary, SMTP, ADMIN_SETUP_KEY, NEXT_PUBLIC_SITE_URL).",
-      "Do NOT set CONVEX_DEPLOYMENT on Vercel.",
+      "Add Cloudinary, SMTP, ADMIN_SETUP_KEY, NEXT_PUBLIC_SITE_URL on Vercel",
+      "so contact form, uploads, and admin work in production.",
     ].join("\n"),
   );
-  process.exit(1);
+  runBuildApp();
 }
 
 if (!deployKey) {
