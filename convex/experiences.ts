@@ -4,6 +4,7 @@ import { requireSession } from "./lib/session";
 
 const experienceValidator = v.object({
   _id: v.id("experiences"),
+  _creationTime: v.number(),
   role: v.string(),
   org: v.string(),
   period: v.string(),

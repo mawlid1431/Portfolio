@@ -6,6 +6,7 @@ import { getSessionByToken, requireSession } from "./lib/session";
 
 const messageValidator = v.object({
   _id: v.id("contactMessages"),
+  _creationTime: v.number(),
   name: v.string(),
   email: v.string(),
   budget: v.string(),

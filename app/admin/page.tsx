@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GlassButton from "@/components/GlassButton";
 import PasswordInput from "@/components/PasswordInput";

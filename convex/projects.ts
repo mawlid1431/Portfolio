@@ -5,6 +5,7 @@ import { requireSession } from "./lib/session";
 
 export const projectValidator = v.object({
   _id: v.id("projects"),
+  _creationTime: v.number(),
   slug: v.string(),
   title: v.string(),
   pitch: v.string(),
@@ -20,6 +21,7 @@ export const projectValidator = v.object({
 
 export type ProjectDoc = {
   _id: Id<"projects">;
+  _creationTime: number;
   slug: string;
   title: string;
   pitch: string;
@@ -44,6 +46,7 @@ function sortLiveProjects<T extends { year: number; createdAt: number }>(
 
 function withDefaults(project: {
   _id: Id<"projects">;
+  _creationTime: number;
   slug: string;
   title: string;
   pitch: string;

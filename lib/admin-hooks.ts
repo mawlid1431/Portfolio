@@ -36,7 +36,10 @@ export function useAdminSession() {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const task = queueMicrotask.bind(null, () => {
+      void refresh();
+    });
+    task();
   }, [refresh]);
 
   return {

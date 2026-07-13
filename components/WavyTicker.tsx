@@ -7,6 +7,8 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 
@@ -29,6 +31,18 @@ type WavyTickerProps = {
   className?: string;
 };
 
+function subscribeNoop() {
+  return () => {};
+}
+
+function getClientSnapshot() {
+  return true;
+}
+
+function getServerSnapshot() {
+  return false;
+}
+
 export default function WavyTicker({
   items,
   interactionType = "auto",
@@ -47,12 +61,16 @@ export default function WavyTicker({
   fadeDistance = 15,
   className,
 }: WavyTickerProps) {
+  const isClient = useSyncExternalStore(
+    subscribeNoop,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
   const targetScrollOffset = useRef(0);
-  const [mounted, setMounted] = useState(false);
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [itemWidths, setItemWidths] = useState<number[]>([]);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -61,11 +79,7 @@ export default function WavyTicker({
   const isVertical = direction === "up" || direction === "down";
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
+    if (!isClient || !containerRef.current) return;
 
     const updateDimensions = () => {
       if (containerRef.current) {
@@ -77,16 +91,16 @@ export default function WavyTicker({
     updateDimensions();
     window.addEventListener("resize", updateDimensions);
     return () => window.removeEventListener("resize", updateDimensions);
-  }, []);
+  }, [isClient]);
 
   useEffect(() => {
-    if (itemRefs.current.length > 0 && items.length > 0) {
-      const widths = itemRefs.current
-        .slice(0, items.length)
-        .map((ref) => ref?.offsetWidth || itemSize);
-      setItemWidths(widths);
-    }
-  }, [items, itemSize]);
+    if (!isClient || itemRefs.current.length === 0 || items.length === 0) return;
+
+    const widths = itemRefs.current
+      .slice(0, items.length)
+      .map((ref) => ref?.offsetWidth || itemSize);
+    setItemWidths(widths);
+  }, [isClient, items, itemSize]);
 
   const calculatedHeight = useMemo(() => {
     const waveHeight = waveStyle === "wavy" ? waveAmplitude * 2 : 0;
@@ -95,7 +109,7 @@ export default function WavyTicker({
   }, [itemSize, waveAmplitude, padding, waveStyle]);
 
   useEffect(() => {
-    if (!mounted || interactionType !== "scroll") return;
+    if (!isClient || interactionType !== "scroll") return;
 
     const handleScroll = () => {
       targetScrollOffset.current = window.scrollY * scrollSpeed;
@@ -103,10 +117,10 @@ export default function WavyTicker({
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [mounted, interactionType, scrollSpeed]);
+  }, [isClient, interactionType, scrollSpeed]);
 
   useAnimationFrame((_time, delta) => {
-    if (!mounted) return;
+    if (!isClient) return;
 
     if (interactionType === "auto") {
       const effectiveSpeed = isHovered ? speed * slowdownOnHover : speed;
@@ -138,6 +152,29 @@ export default function WavyTicker({
     }
   }, [verticalAlign, padding]);
 
+  const fadeMask = fadeEdges
+    ? isVertical
+      ? {
+          maskImage: `linear-gradient(to bottom, transparent 0%, black ${fadeDistance}%, black ${100 - fadeDistance}%, transparent 100%)`,
+          WebkitMaskImage: `linear-gradient(to bottom, transparent 0%, black ${fadeDistance}%, black ${100 - fadeDistance}%, transparent 100%)`,
+        }
+      : {
+          maskImage: `linear-gradient(to right, transparent 0%, black ${fadeDistance}%, black ${100 - fadeDistance}%, transparent 100%)`,
+          WebkitMaskImage: `linear-gradient(to right, transparent 0%, black ${fadeDistance}%, black ${100 - fadeDistance}%, transparent 100%)`,
+        }
+    : undefined;
+
+  const itemStyle = useMemo(
+    (): CSSProperties => ({
+      flexShrink: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      height: `${itemSize}px`,
+    }),
+    [itemSize],
+  );
+
   if (!items || items.length === 0) {
     return (
       <div
@@ -153,6 +190,51 @@ export default function WavyTicker({
         }}
       >
         <p style={{ color: "#999", fontSize: 14 }}>Add items to display</p>
+      </div>
+    );
+  }
+
+  if (!isClient) {
+    return (
+      <div
+        className={className}
+        style={{
+          width: "100%",
+          height: isVertical ? "100%" : Math.max(5, calculatedHeight),
+          minHeight: 5,
+          overflow: "hidden",
+          position: "relative",
+          display: "flex",
+          alignItems:
+            verticalAlign === "top"
+              ? "flex-start"
+              : verticalAlign === "bottom"
+                ? "flex-end"
+                : "center",
+          ...fadeMask,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: isVertical ? "column" : "row",
+            gap: `${gap}px`,
+            padding: `0 ${padding}px`,
+          }}
+        >
+          {items.map((item, index) => (
+            <div
+              key={`static-item-${index}`}
+              style={{
+                ...itemStyle,
+                minWidth: isVertical ? "100%" : `${itemSize}px`,
+                width: isVertical ? "100%" : `${itemSize}px`,
+              }}
+            >
+              {item}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -188,18 +270,6 @@ export default function WavyTicker({
     const wrappedOffset = ((currentOffset % loopLength) + loopLength) % loopLength;
     finalOffset = wrappedOffset - loopLength;
   }
-
-  const fadeMask = fadeEdges
-    ? isVertical
-      ? {
-          maskImage: `linear-gradient(to bottom, transparent 0%, black ${fadeDistance}%, black ${100 - fadeDistance}%, transparent 100%)`,
-          WebkitMaskImage: `linear-gradient(to bottom, transparent 0%, black ${fadeDistance}%, black ${100 - fadeDistance}%, transparent 100%)`,
-        }
-      : {
-          maskImage: `linear-gradient(to right, transparent 0%, black ${fadeDistance}%, black ${100 - fadeDistance}%, transparent 100%)`,
-          WebkitMaskImage: `linear-gradient(to right, transparent 0%, black ${fadeDistance}%, black ${100 - fadeDistance}%, transparent 100%)`,
-        }
-    : undefined;
 
   return (
     <div
@@ -264,17 +334,13 @@ export default function WavyTicker({
                   : undefined
               }
               style={{
-                minWidth: isVertical ? "100%" : itemWidth,
+                ...itemStyle,
+                minWidth: isVertical ? "100%" : `${itemWidth}px`,
                 width: isVertical ? "100%" : undefined,
-                height: itemSize,
-                flexShrink: 0,
                 transform: isVertical
                   ? `translateX(${waveOffset}px)`
                   : `translateY(${waveOffset}px)`,
                 willChange: "transform",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
               {item}

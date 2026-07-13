@@ -1,21 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { glassButtonClasses } from "@/lib/glass-button-classes";
 import { cn } from "@/lib/cn";
 
-export default function ThemeToggle() {
-  const [light, setLight] = useState(false);
-  const [mounted, setMounted] = useState(false);
+function subscribeToTheme(onStoreChange: () => void) {
+  const observer = new MutationObserver(onStoreChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+  return () => observer.disconnect();
+}
 
-  useEffect(() => {
-    setLight(document.documentElement.classList.contains("light"));
-    setMounted(true);
-  }, []);
+function getThemeSnapshot() {
+  return document.documentElement.classList.contains("light");
+}
+
+function getServerThemeSnapshot() {
+  return false;
+}
+
+export default function ThemeToggle() {
+  const light = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot,
+  );
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const toggle = () => {
     const next = !light;
-    setLight(next);
     document.documentElement.classList.toggle("light", next);
     try {
       localStorage.setItem("theme", next ? "light" : "dark");
@@ -30,7 +49,6 @@ export default function ThemeToggle() {
       aria-label={light ? "Switch to dark mode" : "Switch to light mode"}
       className={cn(glassButtonClasses({ variant: "ghost", size: "icon" }))}
     >
-      {/* render both icons only after mount to avoid hydration mismatch */}
       {mounted && (
         <span className="text-base leading-none" aria-hidden>
           {light ? "☾" : "☀"}

@@ -4,6 +4,7 @@ import { requireSession } from "./lib/session";
 
 const faqValidator = v.object({
   _id: v.id("faqs"),
+  _creationTime: v.number(),
   question: v.string(),
   answer: v.string(),
   sortOrder: v.number(),

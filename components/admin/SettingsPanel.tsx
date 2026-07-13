@@ -50,7 +50,10 @@ export default function SettingsPanel() {
   }, []);
 
   useEffect(() => {
-    void loadSessions();
+    const task = queueMicrotask.bind(null, () => {
+      void loadSessions();
+    });
+    task();
   }, [loadSessions]);
 
   const onChangePassword = async (e: FormEvent) => {

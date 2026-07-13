@@ -1,4 +1,3 @@
-import { createHash } from "crypto";
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 
@@ -11,10 +10,14 @@ function assertE2eSecret(secret: string): void {
   }
 }
 
-function resetTokenHash(email: string, code: string): string {
-  return createHash("sha256")
-    .update(`${email.toLowerCase().trim()}:${code.trim()}`)
-    .digest("hex");
+async function resetTokenHash(email: string, code: string): Promise<string> {
+  const data = new TextEncoder().encode(
+    `${email.toLowerCase().trim()}:${code.trim()}`,
+  );
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /** Test-only: insert a known reset code for forgot-password E2E flows. */
@@ -40,7 +43,7 @@ export const seedPasswordResetToken = mutation({
     const now = Date.now();
     await ctx.db.insert("passwordResetTokens", {
       adminId: admin._id,
-      tokenHash: resetTokenHash(args.email, args.code),
+      tokenHash: await resetTokenHash(args.email, args.code),
       expiresAt: now + RESET_CODE_TTL_MS,
       createdAt: now,
     });

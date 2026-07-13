@@ -15,7 +15,8 @@ const LINKS = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [openForPath, setOpenForPath] = useState<string | null>(null);
+  const open = openForPath === pathname;
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -24,8 +25,6 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => setOpen(false), [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -82,7 +81,7 @@ export default function Navbar() {
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               aria-controls="mobile-nav"
-              onClick={() => setOpen(!open)}
+              onClick={() => setOpenForPath(open ? null : pathname)}
               className="flex min-h-11 min-w-11 items-center justify-center rounded-xl"
             >
               <span className="relative flex h-5 w-6 flex-col justify-center">
@@ -107,7 +106,7 @@ export default function Navbar() {
           type="button"
           aria-label="Close menu backdrop"
           className="fixed inset-0 z-40 bg-ink/60 backdrop-blur-sm md:hidden"
-          onClick={() => setOpen(false)}
+          onClick={() => setOpenForPath(null)}
         />
       )}
       <div

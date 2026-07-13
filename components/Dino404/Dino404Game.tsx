@@ -76,7 +76,6 @@ export default function Dino404Game({
   groundColor = "rgba(245,245,245,0.28)",
   scoreColor = "#f5f5f5",
   showHint = true,
-  hintColor = "rgba(245,245,245,0.22)",
   borderRadius = 4,
   borderColor = "rgba(245,245,245,0.08)",
 }: Dino404GameProps) {
@@ -117,14 +116,16 @@ export default function Dino404Game({
     onGround: true,
   });
 
-  colRef.current = {
-    BG: bgColor,
-    DINO: dinoColor,
-    OBS: obstacleColor,
-    GND: groundColor,
-    CLOUD: "rgba(245,245,245,0.06)",
-    SCORE: scoreColor,
-  };
+  useEffect(() => {
+    colRef.current = {
+      BG: bgColor,
+      DINO: dinoColor,
+      OBS: obstacleColor,
+      GND: groundColor,
+      CLOUD: "rgba(245,245,245,0.06)",
+      SCORE: scoreColor,
+    };
+  }, [bgColor, dinoColor, obstacleColor, groundColor, scoreColor]);
 
   const jump = useCallback(() => {
     const g = gameRef.current;

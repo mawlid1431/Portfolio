@@ -4,6 +4,7 @@ import { requireSession } from "./lib/session";
 
 const imageValidator = v.object({
   _id: v.id("siteImages"),
+  _creationTime: v.number(),
   key: v.string(),
   label: v.string(),
   cloudinaryPath: v.string(),

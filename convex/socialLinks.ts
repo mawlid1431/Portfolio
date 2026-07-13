@@ -4,6 +4,7 @@ import { requireSession } from "./lib/session";
 
 const socialValidator = v.object({
   _id: v.id("socialLinks"),
+  _creationTime: v.number(),
   label: v.string(),
   href: v.string(),
   sortOrder: v.number(),
