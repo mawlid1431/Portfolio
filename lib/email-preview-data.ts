@@ -76,7 +76,7 @@ export function getEmailTemplatePreview(
       break;
   }
 
-  return { id, ...meta, ...template };
+  return { ...meta, ...template };
 }
 
 export function getAllEmailTemplatePreviews(): EmailTemplatePreview[] {
