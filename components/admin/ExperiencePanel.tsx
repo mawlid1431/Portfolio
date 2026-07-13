@@ -5,11 +5,10 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import AdminModal from "./AdminModal";
-import AdminRowActions from "./AdminRowActions";
+import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
 import {
   btnGhost,
   btnPrimary,
-  cardClass,
   inputClass,
   labelClass,
   useAdminTokenHash,
@@ -229,27 +228,19 @@ export default function ExperiencePanel() {
         ) : null}
       </AdminModal>
 
-      <div className="flex flex-col gap-4">
+      <div className={adminGridClass}>
         {items.map((e) => (
-          <div key={e._id} className={cardClass}>
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="font-medium">{e.role}</p>
-                <p className="text-sm text-emerald-bright">{e.org}</p>
-                <p className="mt-1 text-xs text-cream-dim">{e.period}</p>
-              </div>
-            </div>
-            <p className="mt-4 line-clamp-2 text-sm text-cream-dim">{e.text}</p>
-            <div className="mt-4">
-              <AdminRowActions
-                onView={() => openView(e)}
-                onEdit={() => openEdit(e)}
-                onDelete={() =>
-                  void remove({ tokenHash, experienceId: e._id })
-                }
-              />
-            </div>
-          </div>
+          <AdminEntityCard
+            key={e._id}
+            title={e.role}
+            subtitle={e.org}
+            meta={e.period}
+            onView={() => openView(e)}
+            onEdit={() => openEdit(e)}
+            onDelete={() => void remove({ tokenHash, experienceId: e._id })}
+          >
+            {e.text}
+          </AdminEntityCard>
         ))}
       </div>
     </div>

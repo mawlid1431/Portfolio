@@ -5,11 +5,10 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import AdminModal from "./AdminModal";
-import AdminRowActions from "./AdminRowActions";
+import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
 import {
   btnGhost,
   btnPrimary,
-  cardClass,
   inputClass,
   labelClass,
   useAdminTokenHash,
@@ -182,19 +181,18 @@ export default function FaqPanel() {
         ) : null}
       </AdminModal>
 
-      <div className="flex flex-col gap-4">
+      <div className={adminGridClass}>
         {items.map((f) => (
-          <div key={f._id} className={cardClass}>
-            <p className="font-medium">{f.question}</p>
-            <p className="mt-3 line-clamp-2 text-sm text-cream-dim">{f.answer}</p>
-            <div className="mt-4">
-              <AdminRowActions
-                onView={() => openView(f)}
-                onEdit={() => openEdit(f)}
-                onDelete={() => void remove({ tokenHash, faqId: f._id })}
-              />
-            </div>
-          </div>
+          <AdminEntityCard
+            key={f._id}
+            title={f.question}
+            meta={`Order ${f.sortOrder}`}
+            onView={() => openView(f)}
+            onEdit={() => openEdit(f)}
+            onDelete={() => void remove({ tokenHash, faqId: f._id })}
+          >
+            {f.answer}
+          </AdminEntityCard>
         ))}
       </div>
     </div>

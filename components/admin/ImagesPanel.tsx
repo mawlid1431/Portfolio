@@ -5,12 +5,11 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { cloudinaryUrl, cloudinaryVideoUrl } from "@/lib/cloudinary";
 import AdminModal from "./AdminModal";
-import AdminRowActions from "./AdminRowActions";
+import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
 import CloudinaryUpload from "./CloudinaryUpload";
 import {
   btnGhost,
   btnPrimary,
-  cardClass,
   inputClass,
   labelClass,
   useAdminTokenHash,
@@ -278,26 +277,38 @@ export default function ImagesPanel() {
         ) : null}
       </AdminModal>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {images.map((img) => (
-          <div key={img._id} className={cardClass}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={cloudinaryUrl(img.cloudinaryPath, { width: 400 })}
-              alt={img.label}
-              className="mb-4 h-36 w-full rounded-xl object-cover"
+      <div className={adminGridClass}>
+        {images.map((img) => {
+          const isVideo = img.key === "about-showreel";
+          return (
+            <AdminEntityCard
+              key={img._id}
+              title={img.label}
+              meta={img.cloudinaryPath}
+              media={
+                isVideo ? (
+                  <video
+                    src={cloudinaryVideoUrl(img.cloudinaryPath)}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="h-36 w-full bg-ink object-cover"
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={cloudinaryUrl(img.cloudinaryPath, { width: 480 })}
+                    alt={img.label}
+                    className="h-36 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  />
+                )
+              }
+              onView={() => openView(img)}
+              onEdit={() => openEdit(img)}
+              onDelete={() => void remove({ tokenHash, imageId: img._id })}
             />
-            <p className="font-medium">{img.label}</p>
-            <p className="mt-1 text-xs text-cream-dim">{img.cloudinaryPath}</p>
-            <div className="mt-4">
-              <AdminRowActions
-                onView={() => openView(img)}
-                onEdit={() => openEdit(img)}
-                onDelete={() => void remove({ tokenHash, imageId: img._id })}
-              />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

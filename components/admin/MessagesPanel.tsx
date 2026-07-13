@@ -4,11 +4,10 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import AdminModal from "./AdminModal";
-import AdminRowActions from "./AdminRowActions";
+import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
 import {
   btnDanger,
   btnGhost,
-  cardClass,
   formatDate,
   labelClass,
   useAdminTokenHash,
@@ -120,38 +119,32 @@ export default function MessagesPanel() {
         )}
       </AdminModal>
 
-      {messages.map((m) => (
-        <div
-          key={m._id}
-          className={`${cardClass} transition-colors hover:border-emerald-glow/40 ${
-            m.read
-              ? "border-cream/10 bg-ink-soft/50"
-              : "border-emerald-glow/30 bg-emerald-glow/5"
-          }`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="font-medium">
-                {m.name}
-                {!m.read && (
-                  <span className="ml-3 rounded-full bg-emerald-glow px-2 py-0.5 text-[10px] font-bold uppercase text-ink">
-                    New
-                  </span>
-                )}
-              </p>
-              <p className="mt-1 text-xs text-cream-dim">{m.email}</p>
-            </div>
-            <span className="text-xs text-cream-dim">{formatDate(m.createdAt)}</span>
-          </div>
-          <p className="mt-3 line-clamp-2 text-sm text-cream-dim">{m.message}</p>
-          <div className="mt-4">
-            <AdminRowActions
-              onView={() => setViewItem(m)}
-              onDelete={() => void remove({ tokenHash, messageId: m._id })}
-            />
-          </div>
-        </div>
-      ))}
+      <div className={adminGridClass}>
+        {messages.map((m) => (
+          <AdminEntityCard
+            key={m._id}
+            title={m.name}
+            subtitle={m.email}
+            meta={`${formatDate(m.createdAt)} · ${m.budget}`}
+            badge={
+              !m.read ? (
+                <span className="shrink-0 rounded-full bg-emerald-glow px-2 py-0.5 text-[10px] font-bold uppercase text-ink">
+                  New
+                </span>
+              ) : undefined
+            }
+            className={
+              m.read
+                ? undefined
+                : "border-emerald-glow/30 bg-emerald-glow/5"
+            }
+            onView={() => setViewItem(m)}
+            onDelete={() => void remove({ tokenHash, messageId: m._id })}
+          >
+            {m.message}
+          </AdminEntityCard>
+        ))}
+      </div>
       {messages.length === 0 && (
         <p className="text-sm text-cream-dim">No get in touch submissions yet.</p>
       )}

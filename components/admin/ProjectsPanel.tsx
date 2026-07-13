@@ -5,12 +5,12 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import AdminModal from "./AdminModal";
-import AdminRowActions from "./AdminRowActions";
+import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
 import CloudinaryUpload from "./CloudinaryUpload";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import {
   btnGhost,
   btnPrimary,
-  cardClass,
   inputClass,
   labelClass,
   useAdminTokenHash,
@@ -351,16 +351,13 @@ export default function ProjectsPanel() {
         ) : null}
       </AdminModal>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className={adminGridClass}>
         {projects.map((p) => (
-          <div key={p._id} className={cardClass}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-medium">{p.title}</p>
-                <p className="mt-1 text-xs text-cream-dim">
-                  {p.year} · {p.tag}
-                </p>
-              </div>
+          <AdminEntityCard
+            key={p._id}
+            title={p.title}
+            meta={`${p.year} · ${p.tag}${p.featured ? " · ★ Featured" : ""}`}
+            badge={
               <span
                 className={`shrink-0 rounded-full px-3 py-1 text-xs ${
                   p.status === "live"
@@ -370,62 +367,22 @@ export default function ProjectsPanel() {
               >
                 {p.status}
               </span>
-            </div>
-            <div className="mt-4">
-              <AdminRowActions
-                onView={() => openView(p)}
-                onEdit={() => openEdit(p)}
-                onDelete={() => void remove({ tokenHash, projectId: p._id })}
+            }
+            media={
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={cloudinaryUrl(p.imagePath, { width: 640 })}
+                alt={p.title}
+                className="h-36 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
               />
-            </div>
-          </div>
+            }
+            onView={() => openView(p)}
+            onEdit={() => openEdit(p)}
+            onDelete={() => void remove({ tokenHash, projectId: p._id })}
+          >
+            {p.pitch}
+          </AdminEntityCard>
         ))}
-      </div>
-
-      <div className="hidden overflow-x-auto rounded-2xl border border-cream/10 bg-ink-soft/70 lg:block">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-cream/10 text-xs uppercase tracking-[0.2em] text-cream-dim">
-              <th className="p-4">Project</th>
-              <th className="p-4">Year</th>
-              <th className="p-4">Category</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Featured</th>
-              <th className="p-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((p) => (
-              <tr
-                key={p._id}
-                className="border-b border-cream/5 transition-colors hover:bg-cream/5"
-              >
-                <td className="p-4 font-medium">{p.title}</td>
-                <td className="p-4 text-cream-dim">{p.year}</td>
-                <td className="p-4 text-cream-dim">{p.tag}</td>
-                <td className="p-4">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs ${
-                      p.status === "live"
-                        ? "bg-emerald-glow/15 text-emerald-bright"
-                        : "bg-cream/10 text-cream-dim"
-                    }`}
-                  >
-                    {p.status}
-                  </span>
-                </td>
-                <td className="p-4 text-cream-dim">{p.featured ? "★" : "—"}</td>
-                <td className="p-4">
-                  <AdminRowActions
-                    onView={() => openView(p)}
-                    onEdit={() => openEdit(p)}
-                    onDelete={() => void remove({ tokenHash, projectId: p._id })}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );

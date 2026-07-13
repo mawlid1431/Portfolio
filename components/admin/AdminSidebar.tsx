@@ -72,29 +72,45 @@ export default function AdminSidebar({
     >
       <div
         className={cn(
-          "border-b border-cream/10",
-          iconOnly ? "flex justify-center p-3" : "p-5",
+          "flex border-b border-cream/10",
+          iconOnly
+            ? "flex-col items-center gap-2 p-3"
+            : "items-start justify-between gap-2 p-4",
         )}
       >
-        <Link
-          href="/"
-          className={cn(
-            "font-display text-cream",
-            iconOnly ? "text-lg" : "text-xl",
-          )}
-          title="MALITOS home"
-        >
-          M<span className="text-emerald-bright">.</span>
+        <div className={cn(iconOnly && "text-center")}>
+          <Link
+            href="/"
+            className={cn(
+              "font-display text-cream",
+              iconOnly ? "text-lg" : "text-xl",
+            )}
+            title="MALITOS home"
+          >
+            M<span className="text-emerald-bright">.</span>
+            {!iconOnly && (
+              <>
+                ALITOS<span className="text-emerald-bright">.</span>
+              </>
+            )}
+          </Link>
           {!iconOnly && (
-            <>
-              ALITOS<span className="text-emerald-bright">.</span>
-            </>
+            <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-cream-dim">
+              Devmalitos CMS
+            </p>
           )}
-        </Link>
-        {!iconOnly && (
-          <p className="mt-2 text-[10px] uppercase tracking-[0.2em] text-cream-dim">
-            Devmalitos CMS
-          </p>
+        </div>
+
+        {isLargeScreen && (
+          <button
+            type="button"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            onClick={toggleCollapsed}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cream/10 text-cream-dim transition-colors hover:border-emerald-glow/40 hover:bg-cream/5 hover:text-cream"
+          >
+            <span className="text-sm leading-none">{collapsed ? "»" : "«"}</span>
+          </button>
         )}
       </div>
 
@@ -133,29 +149,10 @@ export default function AdminSidebar({
 
       <div
         className={cn(
-          "flex flex-col gap-2 border-t border-cream/10 p-3",
-          iconOnly && "items-center",
+          "border-t border-cream/10 p-3",
+          iconOnly && "flex justify-center",
         )}
       >
-        {isLargeScreen && (
-          <button
-            type="button"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            onClick={toggleCollapsed}
-            className={cn(
-              "flex min-h-10 items-center rounded-xl text-cream-dim transition-colors hover:bg-cream/5 hover:text-cream",
-              iconOnly ? "w-11 justify-center" : "w-full gap-3 px-4",
-            )}
-          >
-            <span className="text-base leading-none">{collapsed ? "»" : "«"}</span>
-            {!iconOnly && (
-              <span className="text-xs uppercase tracking-[0.15em]">
-                {collapsed ? "Expand" : "Collapse"}
-              </span>
-            )}
-          </button>
-        )}
-
         <GlassButton
           type="button"
           variant="danger"

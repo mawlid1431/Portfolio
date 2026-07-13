@@ -5,11 +5,10 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import AdminModal from "./AdminModal";
-import AdminRowActions from "./AdminRowActions";
+import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
 import {
   btnGhost,
   btnPrimary,
-  cardClass,
   inputClass,
   labelClass,
   useAdminTokenHash,
@@ -189,65 +188,19 @@ export default function SocialsPanel() {
         ) : null}
       </AdminModal>
 
-      <div className="grid gap-3 lg:hidden">
+      <div className={adminGridClass}>
         {items.map((s) => (
-          <div key={s._id} className={cardClass}>
-            <p className="font-medium">{s.label}</p>
-            <a
-              href={s.href}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-1 block break-all text-sm text-cream-dim hover:text-emerald-bright"
-            >
-              {s.href}
-            </a>
-            <div className="mt-4">
-              <AdminRowActions
-                onView={() => openView(s)}
-                onEdit={() => openEdit(s)}
-                onDelete={() => void remove({ tokenHash, socialId: s._id })}
-              />
-            </div>
-          </div>
+          <AdminEntityCard
+            key={s._id}
+            title={s.label}
+            meta={`Order ${s.sortOrder}`}
+            onView={() => openView(s)}
+            onEdit={() => openEdit(s)}
+            onDelete={() => void remove({ tokenHash, socialId: s._id })}
+          >
+            {s.href}
+          </AdminEntityCard>
         ))}
-      </div>
-
-      <div className="hidden overflow-x-auto rounded-2xl border border-cream/10 bg-ink-soft/70 lg:block">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-cream/10 text-xs uppercase tracking-[0.2em] text-cream-dim">
-              <th className="p-4">Platform</th>
-              <th className="p-4">URL</th>
-              <th className="p-4">Order</th>
-              <th className="p-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((s) => (
-              <tr key={s._id} className="border-b border-cream/5 hover:bg-cream/5">
-                <td className="p-4 font-medium">{s.label}</td>
-                <td className="p-4 text-cream-dim">
-                  <a
-                    href={s.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-emerald-bright"
-                  >
-                    {s.href}
-                  </a>
-                </td>
-                <td className="p-4 text-cream-dim">{s.sortOrder}</td>
-                <td className="p-4">
-                  <AdminRowActions
-                    onView={() => openView(s)}
-                    onEdit={() => openEdit(s)}
-                    onDelete={() => void remove({ tokenHash, socialId: s._id })}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );
