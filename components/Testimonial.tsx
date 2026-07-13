@@ -7,14 +7,14 @@ import { TESTIMONIALS, type TestimonialItem } from "@/lib/data";
 
 function TestimonialCard({ quote, author, role }: TestimonialItem) {
   return (
-    <article className="flex h-full w-[min(420px,78vw)] shrink-0 flex-col justify-center rounded-2xl border border-cream/10 bg-ink-soft/70 px-8 py-6 backdrop-blur-sm">
-      <span className="font-display text-4xl leading-none text-emerald-glow/35">
+    <article className="flex h-full w-[min(420px,78vw)] shrink-0 flex-col justify-center rounded-2xl border border-cream/20 bg-ink-soft px-8 py-6 backdrop-blur-sm">
+      <span className="font-display text-4xl leading-none text-emerald-glow/55">
         &ldquo;
       </span>
-      <p className="mt-2 text-sm leading-relaxed text-cream/90 md:text-[15px]">
+      <p className="mt-2 text-sm leading-relaxed text-cream md:text-[15px]">
         {quote}
       </p>
-      <div className="mt-5 border-t border-cream/10 pt-4">
+      <div className="mt-5 border-t border-cream/15 pt-4">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-bright">
           {author}
         </p>

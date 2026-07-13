@@ -7,7 +7,7 @@ import { createIdempotencyKey } from "@/lib/idempotency";
 import { useSubmitLock } from "@/lib/useSubmitLock";
 
 const inputClass =
-  "w-full rounded-xl border border-cream/15 bg-ink-soft/70 px-5 py-4 text-base text-cream placeholder:text-cream-dim/60 outline-none transition-colors focus:border-emerald-bright md:text-sm";
+  "w-full rounded-xl border border-cream/20 bg-ink-soft px-5 py-4 text-base text-cream placeholder:text-cream-dim/60 outline-none transition-colors focus:border-emerald-bright md:text-sm";
 
 export default function ContactForm() {
   const [sent, setSent] = useState(false);

@@ -25,7 +25,7 @@ html.light {
   --emerald-glow: #0d9f6e;
   --emerald-bright: #047857;
   --cream: #16150f;
-  --cream-dim: #6b6558;
+  --cream-dim: #5c564a;
 
   --glass-base: #ebe4d6;
   --glass-tint: #5c574c;
@@ -35,6 +35,30 @@ html.light {
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --glass-shadow: 0 10px 28px -12px rgba(22, 21, 15, 0.18);
   --glass-rim: rgba(255, 255, 255, 0.85);
+}
+
+/* Shared soft borders that stay visible on light paper */
+.border-subtle {
+  border-color: color-mix(in srgb, var(--cream) 14%, transparent);
+}
+html.light .border-subtle {
+  border-color: color-mix(in srgb, var(--cream) 22%, transparent);
+}
+
+.grain-overlay {
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+html.light .grain-overlay {
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+}
+
+.admin-modal-backdrop {
+  background: color-mix(in srgb, #070707 72%, transparent);
+}
+html.light .admin-modal-backdrop {
+  background: color-mix(in srgb, #16150f 38%, transparent);
 }
 
 @theme inline {
@@ -186,7 +210,7 @@ body {
 }
 .work-card:hover {
   transform: translateY(-10px) rotate(-1deg);
-  box-shadow: 0 24px 60px -20px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 24px 60px -20px color-mix(in srgb, var(--emerald-glow) 35%, transparent);
 }
 .work-card:active {
   transform: scale(0.98);

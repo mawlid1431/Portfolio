@@ -189,7 +189,7 @@ export default function WavyTicker({
           padding: `${padding}px 0`,
         }}
       >
-        <p style={{ color: "#999", fontSize: 14 }}>Add items to display</p>
+        <p className="text-sm text-cream-dim">Add items to display</p>
       </div>
     );
   }

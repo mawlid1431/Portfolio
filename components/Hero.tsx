@@ -80,7 +80,8 @@ export default function Hero({ heroSrc = IMAGES.hero }: { heroSrc?: string }) {
                   i < visibleLetters
                     ? "letter-in 0.5s cubic-bezier(0.22,1,0.36,1) both"
                     : "none",
-                textShadow: "0 0 40px rgba(16,185,129,0.35)",
+                textShadow:
+                  "0 0 40px color-mix(in srgb, var(--emerald-glow) 35%, transparent)",
                 whiteSpace: "pre",
               }}
             >

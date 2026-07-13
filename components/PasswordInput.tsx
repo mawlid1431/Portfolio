@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const inputClass =
-  "w-full rounded-xl border border-cream/15 bg-ink px-5 py-4 text-base text-cream placeholder:text-cream-dim/50 outline-none transition-colors focus:border-emerald-bright pr-14 md:text-sm md:pr-12";
+  "w-full rounded-xl border border-cream/20 bg-ink px-5 py-4 text-base text-cream placeholder:text-cream-dim/50 outline-none transition-colors focus:border-emerald-bright pr-14 md:text-sm md:pr-12";
 
 export default function PasswordInput({
   id,

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Anton, Manrope } from "next/font/google";
 import "./globals.css";
+import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import Grain from "@/components/Grain";
 import Navbar from "@/components/Navbar";
@@ -52,11 +53,13 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-ink text-cream antialiased">
-        <SmoothScroll>
-          <Navbar />
-          {children}
-        </SmoothScroll>
-        <Grain />
+        <ConvexClientProvider>
+          <SmoothScroll>
+            <Navbar />
+            {children}
+          </SmoothScroll>
+          <Grain />
+        </ConvexClientProvider>
       </body>
     </html>
   );

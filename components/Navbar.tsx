@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useQuery } from "convex/react";
 import { useEffect, useState } from "react";
+import { api } from "@/convex/_generated/api";
+import CvPreviewModal from "./CvPreviewModal";
 import GlassButton from "./GlassButton";
 import ThemeToggle from "./ThemeToggle";
 
@@ -18,6 +21,8 @@ export default function Navbar() {
   const [openForPath, setOpenForPath] = useState<string | null>(null);
   const open = openForPath === pathname;
   const [scrolled, setScrolled] = useState(false);
+  const [cvOpen, setCvOpen] = useState(false);
+  const cv = useQuery(api.cv.getPublic);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -35,12 +40,17 @@ export default function Navbar() {
 
   if (pathname.startsWith("/admin")) return null;
 
+  const openCv = () => {
+    setOpenForPath(null);
+    setCvOpen(true);
+  };
+
   return (
     <>
       <header
         className={`fixed inset-x-0 top-0 z-50 pt-safe transition-all duration-500 ${
           scrolled
-            ? "border-b border-emerald-glow/10 bg-ink/80 py-3 backdrop-blur-md"
+            ? "border-b border-emerald-glow/20 bg-ink/85 py-3 backdrop-blur-md"
             : "bg-transparent py-5"
         }`}
       >
@@ -65,11 +75,12 @@ export default function Navbar() {
               </Link>
             ))}
             <GlassButton
-              href="mailto:malitmohamud@gmail.com"
+              type="button"
               variant="accent"
               size="sm"
+              onClick={openCv}
             >
-              Hire me
+              CV
             </GlassButton>
             <ThemeToggle />
           </nav>
@@ -120,6 +131,7 @@ export default function Navbar() {
             <Link
               key={l.href}
               href={l.href}
+              onClick={() => setOpenForPath(null)}
               className={`min-h-12 rounded-xl px-4 py-3 font-display text-2xl uppercase transition-colors ${
                 pathname === l.href
                   ? "bg-emerald-glow/10 text-emerald-bright"
@@ -130,15 +142,22 @@ export default function Navbar() {
             </Link>
           ))}
           <GlassButton
-            href="mailto:malitmohamud@gmail.com"
+            type="button"
             variant="accent"
             size="md"
             className="mt-4 w-full"
+            onClick={openCv}
           >
-            Hire me
+            CV
           </GlassButton>
         </nav>
       </div>
+
+      <CvPreviewModal
+        open={cvOpen}
+        onClose={() => setCvOpen(false)}
+        cv={cv}
+      />
     </>
   );
 }

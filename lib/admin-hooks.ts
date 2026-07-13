@@ -56,13 +56,13 @@ export function useAdminTokenHash() {
 }
 
 export const inputClass =
-  "w-full rounded-xl border border-cream/15 bg-ink px-4 py-3.5 text-base text-cream placeholder:text-cream-dim/50 outline-none transition-colors focus:border-emerald-bright md:text-sm";
+  "w-full rounded-xl border border-cream/20 bg-ink px-4 py-3.5 text-base text-cream placeholder:text-cream-dim/50 outline-none transition-colors focus:border-emerald-bright md:text-sm";
 
 export const labelClass =
   "mb-2 block text-xs uppercase tracking-[0.25em] text-cream-dim";
 
 export const cardClass =
-  "rounded-2xl border border-cream/10 bg-ink-soft/70 p-6";
+  "rounded-2xl border border-cream/20 bg-ink-soft p-6";
 
 export const btnPrimary = glassButtonClasses({ variant: "primary", size: "md" });
 

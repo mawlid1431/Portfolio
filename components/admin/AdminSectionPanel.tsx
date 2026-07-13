@@ -25,11 +25,11 @@ export function AdminSectionPanel({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
       className={cn(
-        "overflow-hidden rounded-2xl border border-cream/10 bg-ink-soft/70",
+        "overflow-hidden rounded-2xl border border-cream/20 bg-ink-soft",
         className,
       )}
     >
-      <div className="flex flex-col gap-3 border-b border-cream/10 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div className="flex flex-col gap-3 border-b border-cream/15 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold tracking-wide text-cream sm:text-base">
             {title}
@@ -66,7 +66,7 @@ function MetricSparkline({ values, color }: { values: number[]; color: string })
     .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
     .join(" ");
   const areaPath = `${linePath} L ${points.at(-1)?.x ?? padX} ${height - padY} L ${points[0]?.x ?? padX} ${height - padY} Z`;
-  const gradientId = `spark-${color.replace("#", "")}`;
+  const gradientId = `spark-${color.replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   return (
     <svg
@@ -122,8 +122,8 @@ export function AdminStatCard({
         type={onClick ? "button" : undefined}
         onClick={onClick}
         className={cn(
-          "relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-cream/10 bg-ink/50 p-4 text-left transition-colors",
-          onClick && "cursor-pointer hover:border-emerald-glow/35",
+          "relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-cream/20 bg-ink-soft p-4 text-left transition-colors",
+          onClick && "cursor-pointer hover:border-emerald-glow/40",
         )}
       >
         {accentColor ? (

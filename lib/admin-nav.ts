@@ -6,6 +6,7 @@ export type AdminTab =
   | "messages"
   | "faq"
   | "socials"
+  | "cv"
   | "settings";
 
 export const ADMIN_NAV: { key: AdminTab; label: string; icon: string }[] = [
@@ -16,5 +17,6 @@ export const ADMIN_NAV: { key: AdminTab; label: string; icon: string }[] = [
   { key: "messages", label: "Messages", icon: "✉" },
   { key: "faq", label: "FAQ", icon: "?" },
   { key: "socials", label: "Socials", icon: "↗" },
+  { key: "cv", label: "CV", icon: "▤" },
   { key: "settings", label: "Settings", icon: "⚙" },
 ];

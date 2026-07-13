@@ -12,8 +12,8 @@ export type ActivityPoint = {
 type SeriesKey = "messages" | "projects";
 
 const SERIES: Array<{ key: SeriesKey; label: string; color: string }> = [
-  { key: "messages", label: "Messages", color: "#3dd68c" },
-  { key: "projects", label: "Projects", color: "#c4a574" },
+  { key: "messages", label: "Messages", color: "var(--emerald-bright)" },
+  { key: "projects", label: "Projects", color: "var(--cream-dim)" },
 ];
 
 type OverviewActivityChartProps = {
@@ -98,7 +98,7 @@ export default function OverviewActivityChart({
                 x2={width - pad.right}
                 y1={y}
                 y2={y}
-                stroke="rgba(244,238,225,0.08)"
+                stroke="color-mix(in srgb, var(--cream) 14%, transparent)"
               />
               <text
                 x={pad.left - 6}
@@ -125,7 +125,7 @@ export default function OverviewActivityChart({
             <g key={series.key}>
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={series.color} stopOpacity="0.2" />
+                  <stop offset="0%" stopColor={series.color} stopOpacity="0.22" />
                   <stop offset="100%" stopColor={series.color} stopOpacity="0" />
                 </linearGradient>
               </defs>
@@ -177,7 +177,7 @@ export default function OverviewActivityChart({
             x2={layout.seriesPoints.messages[hoveredIndex]?.x ?? 0}
             y1={pad.top}
             y2={layout.baselineY}
-            stroke="rgba(61,214,140,0.35)"
+            stroke="color-mix(in srgb, var(--emerald-glow) 45%, transparent)"
             strokeDasharray="3 3"
           />
         ) : null}
@@ -186,11 +186,11 @@ export default function OverviewActivityChart({
       {hover ? (
         <div
           className={cn(
-            "pointer-events-none absolute left-1/2 top-10 z-10 min-w-[140px] -translate-x-1/2 rounded-lg border border-cream/15 bg-ink px-2.5 py-2 shadow-xl",
+            "pointer-events-none absolute left-1/2 top-10 z-10 min-w-[140px] -translate-x-1/2 rounded-lg border border-cream/25 bg-ink-soft px-2.5 py-2 shadow-xl",
           )}
         >
           <p className="text-[10px] font-medium text-cream-dim">{hover.label}</p>
-          <ul className="mt-1.5 space-y-1 border-t border-cream/10 pt-1.5">
+          <ul className="mt-1.5 space-y-1 border-t border-cream/15 pt-1.5">
             {SERIES.map((series) => (
               <li
                 key={series.key}

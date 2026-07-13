@@ -136,7 +136,7 @@ export default function OverviewPanel({
           {Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="rounded-xl border border-cream/10 bg-ink-soft/50 p-4"
+              className="rounded-xl border border-cream/20 bg-ink-soft p-4"
             >
               <div className="h-3 w-24 animate-pulse rounded bg-cream/10" />
               <div className="mt-3 h-8 w-16 animate-pulse rounded bg-cream/10" />
@@ -156,7 +156,7 @@ export default function OverviewPanel({
       label: "Projects",
       value: stats.projects,
       hint: `${liveProjects} live · ${featuredProjects} featured`,
-      accentColor: "#3dd68c",
+      accentColor: "var(--emerald-bright)",
       sparkline: sparklineFromActivity(weekSpark, "projects"),
       tab: "projects" as AdminTab,
     },
@@ -164,7 +164,7 @@ export default function OverviewPanel({
       label: "Unread messages",
       value: unread,
       hint: `${stats.messages} total get in touch`,
-      accentColor: "#c4a574",
+      accentColor: "var(--cream-dim)",
       sparkline: sparklineFromActivity(weekSpark, "messages"),
       tab: "messages" as AdminTab,
     },
@@ -172,14 +172,14 @@ export default function OverviewPanel({
       label: "Experience",
       value: stats.experiences,
       hint: "Roles & history on site",
-      accentColor: "#7dd3ae",
+      accentColor: "var(--emerald-glow)",
       tab: "experience" as AdminTab,
     },
     {
       label: "Site assets",
       value: stats.images + stats.faqs + stats.socials,
       hint: `${stats.images} images · ${stats.faqs} FAQ · ${stats.socials} socials`,
-      accentColor: "#e8d5a3",
+      accentColor: "var(--cream-dim)",
       tab: "images" as AdminTab,
     },
   ];
@@ -230,7 +230,7 @@ export default function OverviewPanel({
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-bright" />
               Live from database
             </span>
-            <div className="inline-flex rounded-xl border border-cream/10 p-1">
+            <div className="inline-flex rounded-xl border border-cream/20 p-1">
               {(["week", "month"] as const).map((value) => (
                 <button
                   key={value}
@@ -269,8 +269,8 @@ export default function OverviewPanel({
             ))}
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-cream/10 bg-ink/40">
-            <div className="border-b border-cream/10 px-3.5 py-2.5 sm:px-4">
+          <div className="overflow-hidden rounded-xl border border-cream/20 bg-ink-soft">
+            <div className="border-b border-cream/15 px-3.5 py-2.5 sm:px-4">
               <h3 className="text-[13px] font-medium text-cream">Activity</h3>
               <p className="mt-0.5 text-[11px] text-cream-dim">
                 {period === "week" ? "Last 7 days" : "Last 30 days"} · messages &
@@ -304,7 +304,7 @@ export default function OverviewPanel({
               {messages.slice(0, 4).map((m) => (
                 <li
                   key={m._id}
-                  className="rounded-lg border border-cream/10 px-3.5 py-2.5 text-[13px]"
+                  className="rounded-lg border border-cream/20 px-3.5 py-2.5 text-[13px]"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className={`font-medium ${m.read ? "text-cream-dim" : "text-cream"}`}>
@@ -325,7 +325,7 @@ export default function OverviewPanel({
                 </li>
               ))}
               {messages.length === 0 ? (
-                <li className="rounded-lg border border-dashed border-cream/10 px-3.5 py-6 text-center text-sm text-cream-dim">
+                <li className="rounded-lg border border-dashed border-cream/20 px-3.5 py-6 text-center text-sm text-cream-dim">
                   No messages yet.
                 </li>
               ) : null}
@@ -350,7 +350,7 @@ export default function OverviewPanel({
                 .map((p) => (
                   <li
                     key={p._id}
-                    className="rounded-lg border border-cream/10 px-3.5 py-2.5 text-[13px]"
+                    className="rounded-lg border border-cream/20 px-3.5 py-2.5 text-[13px]"
                   >
                     <p className="font-medium text-cream">{p.title}</p>
                     <p className="mt-0.5 text-[11px] text-cream-dim">
@@ -359,7 +359,7 @@ export default function OverviewPanel({
                   </li>
                 ))}
               {projects.filter((p) => p.featured).length === 0 ? (
-                <li className="rounded-lg border border-dashed border-cream/10 px-3.5 py-6 text-center text-sm text-cream-dim">
+                <li className="rounded-lg border border-dashed border-cream/20 px-3.5 py-6 text-center text-sm text-cream-dim">
                   No featured projects yet.
                   <div className="mt-3">
                     <button

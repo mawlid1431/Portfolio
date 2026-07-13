@@ -73,6 +73,14 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_sort", ["sortOrder"]),
 
+  /** Single active CV document for the public site navbar */
+  cvDocuments: defineTable({
+    storageId: v.id("_storage"),
+    fileName: v.string(),
+    mimeType: v.string(),
+    updatedAt: v.number(),
+  }).index("by_updated", ["updatedAt"]),
+
   contactMessages: defineTable({
     name: v.string(),
     email: v.string(),

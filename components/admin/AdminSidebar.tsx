@@ -66,13 +66,13 @@ export default function AdminSidebar({
   return (
     <aside
       className={cn(
-        "sticky top-0 flex h-[100dvh] shrink-0 flex-col border-r border-cream/10 bg-ink-soft/80 backdrop-blur-md transition-[width] duration-300",
+        "sticky top-0 flex h-[100dvh] shrink-0 flex-col border-r border-cream/20 bg-ink-soft backdrop-blur-md transition-[width] duration-300",
         iconOnly ? "w-[4.5rem]" : "w-60",
       )}
     >
       <div
         className={cn(
-          "flex border-b border-cream/10",
+          "flex border-b border-cream/15",
           iconOnly
             ? "flex-col items-center gap-2 p-3"
             : "items-start justify-between gap-2 p-4",
@@ -107,7 +107,7 @@ export default function AdminSidebar({
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={toggleCollapsed}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cream/10 text-cream-dim transition-colors hover:border-emerald-glow/40 hover:bg-cream/5 hover:text-cream"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cream/20 text-cream-dim transition-colors hover:border-emerald-glow/40 hover:bg-cream/10 hover:text-cream"
           >
             <span className="text-sm leading-none">{collapsed ? "»" : "«"}</span>
           </button>
@@ -137,7 +137,7 @@ export default function AdminSidebar({
                   : "w-full gap-3 px-4 py-3 text-left",
                 active
                   ? "bg-emerald-glow/15 text-emerald-bright"
-                  : "text-cream-dim hover:bg-cream/5 hover:text-cream",
+                  : "text-cream-dim hover:bg-cream/10 hover:text-cream",
               )}
             >
               <span className="text-base leading-none">{item.icon}</span>
@@ -149,7 +149,7 @@ export default function AdminSidebar({
 
       <div
         className={cn(
-          "border-t border-cream/10 p-3",
+          "border-t border-cream/15 p-3",
           iconOnly && "flex justify-center",
         )}
       >

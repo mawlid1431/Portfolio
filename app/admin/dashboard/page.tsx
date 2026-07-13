@@ -12,6 +12,7 @@ import ExperiencePanel from "@/components/admin/ExperiencePanel";
 import MessagesPanel from "@/components/admin/MessagesPanel";
 import FaqPanel from "@/components/admin/FaqPanel";
 import SocialsPanel from "@/components/admin/SocialsPanel";
+import CvPanel from "@/components/admin/CvPanel";
 import SettingsPanel from "@/components/admin/SettingsPanel";
 import { ADMIN_NAV, type AdminTab } from "@/lib/admin-nav";
 import { useAdminSession } from "@/lib/admin-hooks";
@@ -46,7 +47,7 @@ export default function AdminDashboard() {
       <AdminSidebar tab={tab} onTabChange={setTab} onLogout={() => void logout()} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-4 border-b border-cream/10 bg-ink/90 px-4 py-4 backdrop-blur-md sm:px-6 md:px-8">
+        <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-4 border-b border-cream/20 bg-ink/90 px-4 py-4 backdrop-blur-md sm:px-6 md:px-8">
           <div className="min-w-0">
             <h1 className="truncate font-display text-xl uppercase sm:text-2xl md:text-3xl">
               {activeLabel}
@@ -73,6 +74,7 @@ export default function AdminDashboard() {
           {tab === "messages" && <MessagesPanel />}
           {tab === "faq" && <FaqPanel />}
           {tab === "socials" && <SocialsPanel />}
+          {tab === "cv" && <CvPanel />}
           {tab === "settings" && <SettingsPanel />}
         </section>
       </div>

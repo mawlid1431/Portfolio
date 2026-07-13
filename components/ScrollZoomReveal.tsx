@@ -229,17 +229,17 @@ export default function ScrollZoomReveal({
               {playing ? "Pause" : buttonText}
             </span>
             <span
-              className="flex shrink-0 items-center justify-center rounded-full bg-black"
+              className="flex shrink-0 items-center justify-center rounded-full bg-cream text-ink"
               style={{ width: layout.playSize, height: layout.playSize }}
             >
               {playing ? (
                 <span className="flex gap-1">
-                  <span className="block h-4 w-1 rounded-sm bg-white" />
-                  <span className="block h-4 w-1 rounded-sm bg-white" />
+                  <span className="block h-4 w-1 rounded-sm bg-ink" />
+                  <span className="block h-4 w-1 rounded-sm bg-ink" />
                 </span>
               ) : (
                 <span
-                  className="relative left-0.5 border-y-[7px] border-l-[14px] border-y-transparent border-l-white md:border-y-[10px] md:border-l-[20px]"
+                  className="relative left-0.5 border-y-[7px] border-l-[14px] border-y-transparent border-l-ink md:border-y-[10px] md:border-l-[20px]"
                   aria-hidden
                 />
               )}

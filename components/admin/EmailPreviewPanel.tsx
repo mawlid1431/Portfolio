@@ -116,7 +116,7 @@ export default function EmailPreviewPanel({
         </div>
 
         {view === "html" ? (
-          <div className="mt-4 overflow-hidden rounded-xl border border-cream/10 bg-[#0a0f0d]">
+          <div className="mt-4 overflow-hidden rounded-xl border border-cream/20 bg-ink">
             <iframe
               title={`${preview.label} preview`}
               srcDoc={preview.html}

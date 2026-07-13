@@ -8,7 +8,7 @@ export const adminGridClass =
   "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
 export const adminCardClass =
-  "group flex h-full flex-col rounded-2xl border border-cream/10 bg-ink-soft/70 p-5 transition-colors hover:border-emerald-glow/35";
+  "group flex h-full flex-col rounded-2xl border border-cream/20 bg-ink-soft p-5 transition-colors hover:border-emerald-glow/40";
 
 type AdminEntityCardProps = {
   title: string;
@@ -78,7 +78,7 @@ export default function AdminEntityCard({
         </div>
       )}
 
-      <div className="mt-4 border-t border-cream/10 pt-4">
+      <div className="mt-4 border-t border-cream/15 pt-4">
         <AdminRowActions
           onView={onView}
           onEdit={onEdit}

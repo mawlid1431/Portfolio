@@ -12,6 +12,7 @@ import type * as admins from "../admins.js";
 import type * as auth from "../auth.js";
 import type * as authActions from "../authActions.js";
 import type * as authMutations from "../authMutations.js";
+import type * as cv from "../cv.js";
 import type * as dashboard from "../dashboard.js";
 import type * as e2e from "../e2e.js";
 import type * as experiences from "../experiences.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authActions: typeof authActions;
   authMutations: typeof authMutations;
+  cv: typeof cv;
   dashboard: typeof dashboard;
   e2e: typeof e2e;
   experiences: typeof experiences;
