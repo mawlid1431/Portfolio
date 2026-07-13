@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { glassButtonClasses } from "./glass-button-classes";
+import { adminButtonClass } from "@/components/admin/AdminButton";
 
 type AdminSession = {
   adminId: string;
@@ -55,20 +55,21 @@ export function useAdminTokenHash() {
   return tokenHash;
 }
 
-export const inputClass =
-  "w-full rounded-xl border border-cream/20 bg-ink px-4 py-3.5 text-base text-cream placeholder:text-cream-dim/50 outline-none transition-colors focus:border-emerald-bright md:text-sm";
+export const inputClass = "theme-input";
 
 export const labelClass =
-  "mb-2 block text-xs uppercase tracking-[0.25em] text-cream-dim";
+  "mb-1.5 block text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]";
 
-export const cardClass =
-  "rounded-2xl border border-cream/20 bg-ink-soft p-6";
+export const cardClass = "card-surface p-5 sm:p-6";
 
-export const btnPrimary = glassButtonClasses({ variant: "primary", size: "md" });
+export const btnPrimary = adminButtonClass("primary");
 
-export const btnGhost = glassButtonClasses({ variant: "ghost", size: "md" });
+export const btnGhost = adminButtonClass("simple");
 
-export const btnDanger = glassButtonClasses({ variant: "danger", size: "md" });
+export const btnDanger = adminButtonClass(
+  "muted",
+  "border-red-500/40 text-red-400 hover:bg-red-500/10",
+);
 
 export function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString("en-GB", {

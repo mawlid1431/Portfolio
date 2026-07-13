@@ -61,7 +61,121 @@ html.light .admin-modal-backdrop {
   background: color-mix(in srgb, #16150f 38%, transparent);
 }
 
+/* ── Admin theme (agency-style charcoal + yellow) ── */
+:root {
+  --secondary: #efb917;
+  --charcoal: #08090a;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(40, 40, 40, 0.3);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.6);
+  --input-bg: #171717;
+  --admin-text: #ffffff;
+  --admin-text-dim: #a3a3a3;
+  --admin-text-faint: #737373;
+  --admin-hover-bg: rgba(38, 38, 38, 0.6);
+}
+
+html.light {
+  --secondary: #b98b00;
+  --charcoal: #ffffff;
+  --border-subtle: rgba(0, 0, 0, 0.1);
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.12);
+  --card-shadow: 0 8px 24px -16px rgba(0, 0, 0, 0.18);
+  --input-bg: #ffffff;
+  --admin-text: #0a0a0a;
+  --admin-text-dim: #525252;
+  --admin-text-faint: #737373;
+  --admin-hover-bg: rgba(239, 185, 23, 0.1);
+}
+
+.card-surface {
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  border-radius: 0.75rem;
+}
+
+.card-surface-interactive {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.card-surface-interactive:hover {
+  border-color: color-mix(in srgb, var(--secondary) 40%, transparent);
+}
+
+.card-surface-inner {
+  border: 1px solid var(--border-subtle);
+  background: var(--input-bg);
+  border-radius: 0.5rem;
+}
+
+.admin-modal-surface {
+  background: rgba(18, 18, 20, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+html.light .admin-modal-surface {
+  background: rgba(255, 255, 255, 0.97);
+}
+
+.theme-input {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--input-bg);
+  color: var(--admin-text);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.theme-input::placeholder {
+  color: var(--admin-text-faint);
+}
+.theme-input:focus {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--secondary) 50%, transparent);
+}
+
+/* admin nav */
+.admin-nav-link {
+  color: var(--admin-text-dim);
+}
+.admin-nav-link:hover {
+  background: var(--admin-hover-bg);
+}
+.admin-nav-link--active {
+  color: var(--admin-text);
+  font-weight: 600;
+}
+.admin-nav-indicator {
+  border-color: color-mix(in srgb, var(--secondary) 35%, transparent);
+  background: color-mix(in srgb, var(--secondary) 8%, transparent);
+}
+html.light .admin-nav-indicator {
+  background: rgba(239, 185, 23, 0.15);
+  border-color: var(--secondary);
+}
+
+.admin-sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(239, 185, 23, 0.45) transparent;
+}
+.admin-sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(239, 185, 23, 0.45);
+  border-radius: 3px;
+}
+
 @theme inline {
+  --color-secondary: var(--secondary);
+  --color-charcoal: var(--charcoal);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-emerald-glow: var(--emerald-glow);

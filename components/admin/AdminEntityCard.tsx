@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 import AdminRowActions from "./AdminRowActions";
 import { cn } from "@/lib/cn";
 
@@ -8,7 +9,10 @@ export const adminGridClass =
   "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
 export const adminCardClass =
-  "group flex h-full flex-col rounded-2xl border border-cream/20 bg-ink-soft p-5 transition-colors hover:border-emerald-glow/40";
+  "card-surface card-surface-interactive group flex h-full flex-col overflow-hidden p-4";
+
+export const featuredBadgeClass =
+  "inline-flex items-center rounded-full border border-secondary/40 bg-secondary/15 px-2.5 py-0.5 text-xs font-medium text-secondary";
 
 type AdminEntityCardProps = {
   title: string;
@@ -36,12 +40,16 @@ export default function AdminEntityCard({
   className,
 }: AdminEntityCardProps) {
   return (
-    <article className={cn(adminCardClass, className)}>
+    <motion.article
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 320, damping: 26 }}
+      className={cn(adminCardClass, className)}
+    >
       {media && (
         <button
           type="button"
           onClick={onView}
-          className="mb-4 block w-full overflow-hidden rounded-xl text-left"
+          className="mb-4 block w-full overflow-hidden rounded-lg border border-[var(--border-subtle)] text-left"
           disabled={!onView}
         >
           {media}
@@ -55,16 +63,16 @@ export default function AdminEntityCard({
           className="min-w-0 flex-1 text-left"
           disabled={!onView}
         >
-          <h3 className="truncate font-medium text-cream transition-colors group-hover:text-emerald-bright">
+          <h3 className="line-clamp-2 font-semibold text-[var(--admin-text)] transition-colors group-hover:text-secondary">
             {title}
           </h3>
           {subtitle && (
-            <p className="mt-1 truncate text-sm text-emerald-bright/90">
+            <p className="mt-1 truncate text-sm text-secondary/90">
               {subtitle}
             </p>
           )}
           {meta && (
-            <div className="mt-2 text-xs uppercase tracking-[0.12em] text-cream-dim">
+            <div className="mt-1.5 text-xs text-[var(--admin-text-faint)]">
               {meta}
             </div>
           )}
@@ -73,18 +81,14 @@ export default function AdminEntityCard({
       </div>
 
       {children && (
-        <div className="mt-3 line-clamp-3 flex-1 text-sm text-cream-dim">
+        <div className="mt-3 line-clamp-3 flex-1 text-sm text-[var(--admin-text-dim)]">
           {children}
         </div>
       )}
 
-      <div className="mt-4 border-t border-cream/15 pt-4">
-        <AdminRowActions
-          onView={onView}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+      <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
+        <AdminRowActions onView={onView} onEdit={onEdit} onDelete={onDelete} />
       </div>
-    </article>
+    </motion.article>
   );
 }

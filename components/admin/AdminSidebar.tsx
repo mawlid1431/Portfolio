@@ -2,8 +2,17 @@
 
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
-import GlassButton from "@/components/GlassButton";
-import { ADMIN_NAV, type AdminTab } from "@/lib/admin-nav";
+import { motion } from "framer-motion";
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconLogout,
+} from "@/components/admin/AdminIcons";
+import {
+  ADMIN_NAV,
+  isAdminNavSectionStart,
+  type AdminTab,
+} from "@/lib/admin-nav";
 import { cn } from "@/lib/cn";
 
 const STORAGE_KEY = "admin-sidebar-collapsed";
@@ -64,38 +73,37 @@ export default function AdminSidebar({
   };
 
   return (
-    <aside
-      className={cn(
-        "sticky top-0 flex h-[100dvh] shrink-0 flex-col border-r border-cream/20 bg-ink-soft backdrop-blur-md transition-[width] duration-300",
-        iconOnly ? "w-[4.5rem]" : "w-60",
-      )}
+    <motion.aside
+      animate={{ width: iconOnly ? 80 : 272 }}
+      transition={{ type: "spring", stiffness: 320, damping: 32 }}
+      className="sticky top-0 flex h-[100dvh] shrink-0 flex-col overflow-hidden border-r border-[var(--border-subtle)] bg-[var(--card-bg)]"
     >
       <div
         className={cn(
-          "flex border-b border-cream/15",
+          "flex border-b border-[var(--border-subtle)]",
           iconOnly
             ? "flex-col items-center gap-2 p-3"
             : "items-start justify-between gap-2 p-4",
         )}
       >
-        <div className={cn(iconOnly && "text-center")}>
+        <div className={cn("min-w-0", iconOnly && "text-center")}>
           <Link
             href="/"
             className={cn(
-              "font-display text-cream",
+              "font-display whitespace-nowrap text-[var(--admin-text)]",
               iconOnly ? "text-lg" : "text-xl",
             )}
             title="MALITOS home"
           >
-            M<span className="text-emerald-bright">.</span>
+            M<span className="text-secondary">.</span>
             {!iconOnly && (
               <>
-                ALITOS<span className="text-emerald-bright">.</span>
+                ALITOS<span className="text-secondary">.</span>
               </>
             )}
           </Link>
           {!iconOnly && (
-            <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-cream-dim">
+            <p className="mt-1 whitespace-nowrap text-[10px] font-semibold uppercase tracking-widest text-[var(--admin-text-faint)]">
               Devmalitos CMS
             </p>
           )}
@@ -107,64 +115,98 @@ export default function AdminSidebar({
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={toggleCollapsed}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cream/20 text-cream-dim transition-colors hover:border-emerald-glow/40 hover:bg-cream/10 hover:text-cream"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[var(--border-subtle)] text-[var(--admin-text-dim)] transition-colors hover:border-secondary/40 hover:bg-[var(--admin-hover-bg)] hover:text-secondary"
           >
-            <span className="text-sm leading-none">{collapsed ? "»" : "«"}</span>
+            {collapsed ? (
+              <IconChevronRight className="h-4 w-4" />
+            ) : (
+              <IconChevronLeft className="h-4 w-4" />
+            )}
           </button>
         )}
       </div>
 
       <nav
-        className={cn(
-          "flex flex-1 flex-col gap-1 overflow-y-auto py-3",
-          iconOnly ? "items-center px-2" : "px-3",
-        )}
+        className="admin-sidebar-nav min-h-0 flex-1 space-y-1 overflow-y-auto p-3"
         aria-label="Admin sections"
       >
-        {ADMIN_NAV.map((item) => {
+        {ADMIN_NAV.map((item, index) => {
           const active = tab === item.key;
+          const Icon = item.icon;
           return (
-            <button
-              key={item.key}
-              type="button"
-              title={iconOnly ? item.label : undefined}
-              aria-current={active ? "page" : undefined}
-              onClick={() => onTabChange(item.key)}
-              className={cn(
-                "flex min-h-11 items-center rounded-xl text-sm transition-colors",
-                iconOnly
-                  ? "w-11 justify-center px-0"
-                  : "w-full gap-3 px-4 py-3 text-left",
-                active
-                  ? "bg-emerald-glow/15 text-emerald-bright"
-                  : "text-cream-dim hover:bg-cream/10 hover:text-cream",
+            <div key={item.key}>
+              {!iconOnly && isAdminNavSectionStart(index) && (
+                <p className="mb-2 mt-4 whitespace-nowrap px-3 text-[11px] font-semibold uppercase tracking-widest text-[var(--admin-text-faint)] first:mt-0">
+                  {item.section}
+                </p>
               )}
-            >
-              <span className="text-base leading-none">{item.icon}</span>
-              {!iconOnly && <span>{item.label}</span>}
-            </button>
+              <button
+                type="button"
+                title={iconOnly ? item.label : undefined}
+                aria-current={active ? "page" : undefined}
+                onClick={() => onTabChange(item.key)}
+                className={cn(
+                  "admin-nav-link group relative flex w-full rounded-lg transition duration-200",
+                  iconOnly
+                    ? "items-center justify-center px-2 py-2.5"
+                    : "items-start gap-3 px-3 py-2.5 text-left hover:translate-x-0.5",
+                  active && "admin-nav-link--active",
+                )}
+              >
+                {active && (
+                  <motion.span
+                    layoutId="admin-nav-active"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    className="admin-nav-indicator absolute inset-0 rounded-lg border"
+                    aria-hidden
+                  />
+                )}
+                <span
+                  className={cn(
+                    "relative z-10 flex shrink-0 items-center justify-center rounded-md border transition-colors",
+                    iconOnly ? "h-9 w-9" : "h-8 w-8",
+                    active
+                      ? "border-secondary bg-secondary/15 text-secondary"
+                      : "border-[var(--border-subtle)] bg-[var(--input-bg)] text-[var(--admin-text-dim)] group-hover:border-secondary/40 group-hover:text-secondary",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                {!iconOnly && (
+                  <span className="relative z-10 min-w-0">
+                    <span className="block whitespace-nowrap text-sm font-medium text-[var(--admin-text)]">
+                      {item.label}
+                    </span>
+                    <span className="mt-0.5 block whitespace-nowrap text-xs text-[var(--admin-text-faint)] group-hover:text-[var(--admin-text-dim)]">
+                      {item.description}
+                    </span>
+                  </span>
+                )}
+              </button>
+            </div>
           );
         })}
       </nav>
 
       <div
         className={cn(
-          "border-t border-cream/15 p-3",
+          "border-t border-[var(--border-subtle)] p-3",
           iconOnly && "flex justify-center",
         )}
       >
-        <GlassButton
+        <button
           type="button"
-          variant="danger"
-          size={iconOnly ? "icon" : "md"}
-          className={iconOnly ? "" : "w-full justify-start"}
           onClick={onLogout}
           title={iconOnly ? "Log out" : undefined}
+          className={cn(
+            "flex items-center gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--input-bg)] text-sm font-medium text-[var(--admin-text-dim)] transition-colors hover:border-red-500/40 hover:text-red-400",
+            iconOnly ? "h-9 w-9 justify-center" : "w-full px-3 py-2.5",
+          )}
         >
-          <span>⏻</span>
-          {!iconOnly && <span>Log out</span>}
-        </GlassButton>
+          <IconLogout className="h-4 w-4 shrink-0" />
+          {!iconOnly && <span className="whitespace-nowrap">Log out</span>}
+        </button>
       </div>
-    </aside>
+    </motion.aside>
   );
 }

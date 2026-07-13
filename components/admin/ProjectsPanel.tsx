@@ -5,16 +5,15 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import AdminModal from "./AdminModal";
-import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
+import AdminButton from "./AdminButton";
+import AdminDeleteConfirmModal from "./AdminDeleteConfirmModal";
+import AdminEntityCard, {
+  adminGridClass,
+  featuredBadgeClass,
+} from "./AdminEntityCard";
 import CloudinaryUpload from "./CloudinaryUpload";
 import { cloudinaryUrl } from "@/lib/cloudinary";
-import {
-  btnGhost,
-  btnPrimary,
-  inputClass,
-  labelClass,
-  useAdminTokenHash,
-} from "@/lib/admin-hooks";
+import { inputClass, labelClass, useAdminTokenHash } from "@/lib/admin-hooks";
 import { useSubmitLock } from "@/lib/useSubmitLock";
 
 type Draft = {
@@ -49,11 +48,15 @@ const empty: Draft = {
   status: "live",
 };
 
-function ViewField({ label, value }: { label: string; value: string }) {
+function InnerField({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <p className={labelClass}>{label}</p>
-      <p className="mt-1 whitespace-pre-wrap text-sm text-cream">{value}</p>
+    <div className="card-surface-inner p-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
+        {label}
+      </p>
+      <p className="mt-1 whitespace-pre-wrap break-words text-sm text-[var(--admin-text)]">
+        {value}
+      </p>
     </div>
   );
 }
@@ -72,6 +75,8 @@ export default function ProjectsPanel() {
   const [editingId, setEditingId] = useState<Id<"projects"> | null>(null);
   const [modalMode, setModalMode] = useState<ModalMode>("closed");
   const [viewItem, setViewItem] = useState<ProjectItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ProjectItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const { loading, run } = useSubmitLock();
 
@@ -113,6 +118,18 @@ export default function ProjectsPanel() {
     setModalMode("view");
   };
 
+  const confirmDelete = async () => {
+    if (!tokenHash || !deleteTarget) return;
+    setDeleting(true);
+    try {
+      await remove({ tokenHash, projectId: deleteTarget._id });
+      setDeleteTarget(null);
+      if (viewItem?._id === deleteTarget._id) closeModal();
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!tokenHash) return;
@@ -145,7 +162,9 @@ export default function ProjectsPanel() {
   };
 
   if (!tokenHash || projects === undefined) {
-    return <p className="text-sm text-cream-dim">Loading projects…</p>;
+    return (
+      <p className="text-sm text-[var(--admin-text-dim)]">Loading projects…</p>
+    );
   }
 
   const isFormOpen = modalMode === "create" || modalMode === "edit";
@@ -154,9 +173,9 @@ export default function ProjectsPanel() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-end">
-        <button type="button" className={btnPrimary} onClick={openCreate}>
+        <AdminButton variant="primary" onClick={openCreate}>
           Add project
-        </button>
+        </AdminButton>
       </div>
 
       <AdminModal
@@ -164,70 +183,112 @@ export default function ProjectsPanel() {
         onClose={closeModal}
         title={
           modalMode === "create"
-            ? "New project"
+            ? "Add project"
             : modalMode === "edit"
               ? "Edit project"
               : "Project details"
         }
         description={
           isReadOnly
-            ? "Review project information before editing."
+            ? viewItem?.title
             : "Fill in the details below and save to update your portfolio."
         }
-        size="xl"
+        size="lg"
         footer={
-          isReadOnly ? (
+          isReadOnly && viewItem ? (
             <>
-              <button type="button" className={btnGhost} onClick={closeModal}>
+              <AdminButton variant="muted" onClick={closeModal}>
                 Close
-              </button>
-              {viewItem && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => openEdit(viewItem)}
-                >
-                  Edit
-                </button>
-              )}
+              </AdminButton>
+              <AdminButton variant="simple" onClick={() => openEdit(viewItem)}>
+                Edit
+              </AdminButton>
+              <AdminButton
+                variant="muted"
+                className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+                onClick={() => setDeleteTarget(viewItem)}
+              >
+                Delete
+              </AdminButton>
             </>
           ) : isFormOpen ? (
             <>
-              <button type="button" className={btnGhost} onClick={closeModal}>
+              <AdminButton variant="muted" onClick={closeModal}>
                 Cancel
-              </button>
-              <button
+              </AdminButton>
+              <AdminButton
+                variant="primary"
                 type="submit"
                 form="project-form"
-                className={btnPrimary}
                 disabled={loading}
               >
                 {loading ? "Saving…" : "Save project"}
-              </button>
+              </AdminButton>
             </>
           ) : undefined
         }
       >
         {isReadOnly && viewItem ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <ViewField label="Title" value={viewItem.title} />
-            <ViewField label="Slug" value={viewItem.slug} />
-            <ViewField label="Year" value={String(viewItem.year)} />
-            <ViewField label="Category" value={viewItem.tag} />
-            <ViewField label="Status" value={viewItem.status} />
-            <ViewField
-              label="Featured"
-              value={viewItem.featured ? "Yes" : "No"}
-            />
-            <ViewField label="Image path" value={viewItem.imagePath} />
-            <ViewField label="Live URL" value={viewItem.liveUrl ?? "—"} />
-            <div className="sm:col-span-2">
-              <ViewField label="Description" value={viewItem.pitch} />
+          <div className="space-y-5">
+            <div className="overflow-hidden rounded-xl border border-[var(--border-subtle)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cloudinaryUrl(viewItem.imagePath, { width: 1200 })}
+                alt={viewItem.title}
+                className="max-h-72 w-full object-cover"
+              />
             </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {viewItem.featured && (
+                <span className={featuredBadgeClass}>Featured</span>
+              )}
+              <span
+                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                  viewItem.status === "live"
+                    ? "border-secondary/40 bg-secondary/15 text-secondary"
+                    : "border-[var(--border-subtle)] text-[var(--admin-text-dim)]"
+                }`}
+              >
+                {viewItem.status}
+              </span>
+              <p className="text-sm text-[var(--admin-text-dim)]">
+                {viewItem.tag} · {viewItem.year}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-[var(--admin-text)]">
+                {viewItem.title}
+              </h3>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--admin-text-dim)]">
+                {viewItem.pitch}
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <InnerField label="Slug" value={viewItem.slug} />
+              <InnerField label="Image path" value={viewItem.imagePath} />
+            </div>
+
+            {viewItem.liveUrl && (
+              <a
+                href={viewItem.liveUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block text-sm font-medium text-secondary hover:underline"
+              >
+                View live project →
+              </a>
+            )}
           </div>
         ) : isFormOpen ? (
-          <form id="project-form" onSubmit={onSubmit} className="flex flex-col gap-4">
-            <div>
+          <form
+            id="project-form"
+            onSubmit={onSubmit}
+            className="grid gap-4 md:grid-cols-2"
+          >
+            <div className="md:col-span-2">
               <label className={labelClass}>Project image</label>
               <CloudinaryUpload
                 folder="devmalitos/projects"
@@ -258,16 +319,6 @@ export default function ProjectsPanel() {
               />
             </div>
             <div>
-              <label className={labelClass}>Description</label>
-              <textarea
-                className={inputClass}
-                rows={3}
-                value={draft.pitch}
-                onChange={(e) => setDraft({ ...draft, pitch: e.target.value })}
-                required
-              />
-            </div>
-            <div>
               <label className={labelClass}>Year</label>
               <input
                 type="number"
@@ -281,10 +332,47 @@ export default function ProjectsPanel() {
                 required
               />
             </div>
-            <div className="flex flex-col gap-3 rounded-xl border border-cream/10 p-4">
-              <label className="flex items-center gap-2 text-sm text-cream-dim">
+            <div className="md:col-span-2">
+              <label className={labelClass}>Description</label>
+              <textarea
+                className={inputClass}
+                rows={3}
+                value={draft.pitch}
+                onChange={(e) => setDraft({ ...draft, pitch: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Slug</label>
+              <input
+                className={inputClass}
+                value={draft.slug}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    slug: e.target.value,
+                    imagePath:
+                      draft.imagePath ||
+                      `devmalitos/projects/${e.target.value.trim().toLowerCase()}`,
+                  })
+                }
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Category</label>
+              <input
+                className={inputClass}
+                value={draft.tag}
+                onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
+                required
+              />
+            </div>
+            <div className="md:col-span-2 flex flex-col gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--input-bg)] p-4">
+              <label className="flex items-center gap-2 text-sm text-[var(--admin-text-dim)]">
                 <input
                   type="checkbox"
+                  className="h-4 w-4 accent-[var(--secondary)]"
                   checked={draft.hasLiveSite}
                   onChange={(e) =>
                     setDraft({ ...draft, hasLiveSite: e.target.checked })
@@ -308,80 +396,74 @@ export default function ProjectsPanel() {
                 </div>
               )}
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className={labelClass}>Slug</label>
-                <input
-                  className={inputClass}
-                  value={draft.slug}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      slug: e.target.value,
-                      imagePath:
-                        draft.imagePath ||
-                        `devmalitos/projects/${e.target.value.trim().toLowerCase()}`,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Category</label>
-                <input
-                  className={inputClass}
-                  value={draft.tag}
-                  onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Status</label>
-                <select
-                  className={inputClass}
-                  value={draft.status}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      status: e.target.value as "live" | "draft",
-                    })
-                  }
-                >
-                  <option value="live">Live</option>
-                  <option value="draft">Draft</option>
-                </select>
-              </div>
-              <label className="flex items-end gap-2 pb-3 text-sm text-cream-dim">
-                <input
-                  type="checkbox"
-                  checked={draft.featured}
-                  onChange={(e) =>
-                    setDraft({ ...draft, featured: e.target.checked })
-                  }
-                />
-                Featured
-              </label>
+            <div>
+              <label className={labelClass}>Status</label>
+              <select
+                className={inputClass}
+                value={draft.status}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    status: e.target.value as "live" | "draft",
+                  })
+                }
+              >
+                <option value="live">Live</option>
+                <option value="draft">Draft</option>
+              </select>
             </div>
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            <label className="flex items-end gap-2 pb-3 text-sm text-[var(--admin-text-dim)]">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[var(--secondary)]"
+                checked={draft.featured}
+                onChange={(e) =>
+                  setDraft({ ...draft, featured: e.target.checked })
+                }
+              />
+              Featured
+            </label>
+            {error && (
+              <p className="md:col-span-2 text-xs text-red-400">{error}</p>
+            )}
           </form>
         ) : null}
       </AdminModal>
+
+      <AdminDeleteConfirmModal
+        open={deleteTarget !== null}
+        entityName="project"
+        targetLabel={deleteTarget?.title ?? ""}
+        detail={
+          deleteTarget
+            ? `${deleteTarget.tag} · ${deleteTarget.year} · ${deleteTarget.status}`
+            : undefined
+        }
+        deleting={deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDelete()}
+      />
 
       <div className={adminGridClass}>
         {projects.map((p) => (
           <AdminEntityCard
             key={p._id}
             title={p.title}
-            meta={`${p.year} · ${p.tag}${p.featured ? " · ★ Featured" : ""}`}
+            meta={`${p.tag} · ${p.year}`}
             badge={
-              <span
-                className={`shrink-0 rounded-full px-3 py-1 text-xs ${
-                  p.status === "live"
-                    ? "bg-emerald-glow/15 text-emerald-bright"
-                    : "bg-cream/10 text-cream-dim"
-                }`}
-              >
-                {p.status}
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                <span
+                  className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                    p.status === "live"
+                      ? "border-secondary/40 bg-secondary/15 text-secondary"
+                      : "border-[var(--border-subtle)] text-[var(--admin-text-dim)]"
+                  }`}
+                >
+                  {p.status}
+                </span>
+                {p.featured && (
+                  <span className={featuredBadgeClass}>Featured</span>
+                )}
               </span>
             }
             media={
@@ -394,7 +476,7 @@ export default function ProjectsPanel() {
             }
             onView={() => openView(p)}
             onEdit={() => openEdit(p)}
-            onDelete={() => void remove({ tokenHash, projectId: p._id })}
+            onDelete={() => setDeleteTarget(p)}
           >
             {p.pitch}
           </AdminEntityCard>

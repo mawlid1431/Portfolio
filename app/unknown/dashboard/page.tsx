@@ -43,18 +43,18 @@ export default function AdminDashboard() {
   const activeLabel = ADMIN_NAV.find((n) => n.key === tab)?.label ?? "Dashboard";
 
   return (
-    <main className="flex min-h-screen bg-ink">
+    <main className="admin-shell flex min-h-screen bg-charcoal text-[var(--admin-text)]">
       <AdminSidebar tab={tab} onTabChange={setTab} onLogout={() => void logout()} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-4 border-b border-cream/20 bg-ink/90 px-4 py-4 backdrop-blur-md sm:px-6 md:px-8">
+        <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-subtle)] bg-charcoal/90 px-4 py-4 backdrop-blur-md sm:px-6 md:px-8">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-xl uppercase sm:text-2xl md:text-3xl">
-              {activeLabel}
-            </h1>
-            <p className="mt-0.5 truncate text-xs text-cream-dim">
+            <p className="truncate text-sm text-secondary">
               Welcome back, {admin.name}
             </p>
+            <h1 className="mt-1 truncate text-2xl font-bold text-[var(--admin-text)] md:text-3xl">
+              {activeLabel}
+            </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ThemeToggle />

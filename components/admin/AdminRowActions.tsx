@@ -1,9 +1,6 @@
 "use client";
 
-import { glassButtonClasses } from "@/lib/glass-button-classes";
-
-const actionGhost = glassButtonClasses({ variant: "ghost", size: "sm" });
-const actionDanger = glassButtonClasses({ variant: "danger", size: "sm" });
+import AdminButton from "./AdminButton";
 
 type AdminRowActionsProps = {
   onView?: () => void;
@@ -21,19 +18,19 @@ export default function AdminRowActions({
   return (
     <div className="flex flex-wrap gap-2">
       {onView && (
-        <button type="button" className={actionGhost} onClick={onView}>
+        <AdminButton variant="primary" onClick={onView}>
           View
-        </button>
+        </AdminButton>
       )}
       {onEdit && (
-        <button type="button" className={actionGhost} onClick={onEdit}>
+        <AdminButton variant="simple" onClick={onEdit}>
           Edit
-        </button>
+        </AdminButton>
       )}
       {onDelete && (
-        <button type="button" className={actionDanger} onClick={onDelete}>
+        <AdminButton variant="muted" onClick={onDelete}>
           {deleteLabel}
-        </button>
+        </AdminButton>
       )}
     </div>
   );
