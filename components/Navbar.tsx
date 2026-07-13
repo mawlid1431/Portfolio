@@ -38,7 +38,7 @@ export default function Navbar() {
     };
   }, [open]);
 
-  if (pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/unknown")) return null;
 
   const openCv = () => {
     setOpenForPath(null);

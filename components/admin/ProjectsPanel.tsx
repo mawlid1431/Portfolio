@@ -24,6 +24,7 @@ type Draft = {
   tag: string;
   year: number;
   imagePath: string;
+  hasLiveSite: boolean;
   liveUrl: string;
   featured: boolean;
   status: "live" | "draft";
@@ -42,6 +43,7 @@ const empty: Draft = {
   tag: "",
   year: new Date().getFullYear(),
   imagePath: "",
+  hasLiveSite: false,
   liveUrl: "",
   featured: false,
   status: "live",
@@ -98,6 +100,7 @@ export default function ProjectsPanel() {
       tag: project.tag,
       year: project.year,
       imagePath: project.imagePath,
+      hasLiveSite: Boolean(project.liveUrl),
       liveUrl: project.liveUrl ?? "",
       featured: project.featured,
       status: project.status,
@@ -116,9 +119,11 @@ export default function ProjectsPanel() {
     setError("");
 
     await run(async () => {
+      // hasLiveSite is UI-only state — it must not reach the Convex validators
+      const { hasLiveSite, ...fields } = draft;
       const payload = {
-        ...draft,
-        liveUrl: draft.liveUrl.trim() || undefined,
+        ...fields,
+        liveUrl: hasLiveSite ? draft.liveUrl.trim() || undefined : undefined,
         imagePath:
           draft.imagePath.trim() ||
           `devmalitos/projects/${draft.slug.trim().toLowerCase()}`,
@@ -222,72 +227,6 @@ export default function ProjectsPanel() {
           </div>
         ) : isFormOpen ? (
           <form id="project-form" onSubmit={onSubmit} className="flex flex-col gap-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className={labelClass}>Title</label>
-                <input
-                  className={inputClass}
-                  value={draft.title}
-                  onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Slug</label>
-                <input
-                  className={inputClass}
-                  value={draft.slug}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      slug: e.target.value,
-                      imagePath:
-                        draft.imagePath ||
-                        `devmalitos/projects/${e.target.value.trim().toLowerCase()}`,
-                    })
-                  }
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className={labelClass}>Short description</label>
-              <textarea
-                className={inputClass}
-                rows={3}
-                value={draft.pitch}
-                onChange={(e) => setDraft({ ...draft, pitch: e.target.value })}
-                required
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className={labelClass}>Year</label>
-                <input
-                  type="number"
-                  min={2000}
-                  max={2100}
-                  className={inputClass}
-                  value={draft.year}
-                  onChange={(e) =>
-                    setDraft({ ...draft, year: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Live site URL</label>
-                <input
-                  type="url"
-                  className={inputClass}
-                  placeholder="https://example.com"
-                  value={draft.liveUrl}
-                  onChange={(e) =>
-                    setDraft({ ...draft, liveUrl: e.target.value })
-                  }
-                />
-              </div>
-            </div>
             <div>
               <label className={labelClass}>Project image</label>
               <CloudinaryUpload
@@ -309,7 +248,84 @@ export default function ProjectsPanel() {
                 required
               />
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <label className={labelClass}>Title</label>
+              <input
+                className={inputClass}
+                value={draft.title}
+                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Description</label>
+              <textarea
+                className={inputClass}
+                rows={3}
+                value={draft.pitch}
+                onChange={(e) => setDraft({ ...draft, pitch: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Year</label>
+              <input
+                type="number"
+                min={2000}
+                max={2100}
+                className={inputClass}
+                value={draft.year}
+                onChange={(e) =>
+                  setDraft({ ...draft, year: Number(e.target.value) })
+                }
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-3 rounded-xl border border-cream/10 p-4">
+              <label className="flex items-center gap-2 text-sm text-cream-dim">
+                <input
+                  type="checkbox"
+                  checked={draft.hasLiveSite}
+                  onChange={(e) =>
+                    setDraft({ ...draft, hasLiveSite: e.target.checked })
+                  }
+                />
+                This project has a live website.
+              </label>
+              {draft.hasLiveSite && (
+                <div>
+                  <label className={labelClass}>Live site URL</label>
+                  <input
+                    type="url"
+                    className={inputClass}
+                    placeholder="https://example.com"
+                    value={draft.liveUrl}
+                    onChange={(e) =>
+                      setDraft({ ...draft, liveUrl: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              )}
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className={labelClass}>Slug</label>
+                <input
+                  className={inputClass}
+                  value={draft.slug}
+                  onChange={(e) =>
+                    setDraft({
+                      ...draft,
+                      slug: e.target.value,
+                      imagePath:
+                        draft.imagePath ||
+                        `devmalitos/projects/${e.target.value.trim().toLowerCase()}`,
+                    })
+                  }
+                  required
+                />
+              </div>
               <div>
                 <label className={labelClass}>Category</label>
                 <input

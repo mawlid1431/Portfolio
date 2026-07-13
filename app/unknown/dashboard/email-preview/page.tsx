@@ -11,7 +11,7 @@ export default function AdminEmailPreviewPage() {
   const { admin, loading } = useAdminSession();
 
   useEffect(() => {
-    if (!loading && !admin) router.replace("/admin");
+    if (!loading && !admin) router.replace("/unknown");
   }, [loading, admin, router]);
 
   if (loading) {
@@ -37,7 +37,7 @@ export default function AdminEmailPreviewPage() {
             </h1>
           </div>
           <Link
-            href="/admin/dashboard"
+            href="/unknown/dashboard"
             className="text-xs text-cream-dim underline hover:text-emerald-bright"
           >
             Back to dashboard

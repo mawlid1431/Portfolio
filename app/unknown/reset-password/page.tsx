@@ -85,7 +85,7 @@ function ResetPasswordForm() {
       }
 
       setDone(true);
-      setTimeout(() => router.push("/admin"), 2000);
+      setTimeout(() => router.push("/unknown"), 2000);
     }).catch((err: unknown) => {
       setError(err instanceof Error ? err.message : "Failed to reset password");
     });
@@ -166,7 +166,7 @@ function ResetPasswordForm() {
         </GlassButton>
 
         <Link
-          href="/admin"
+          href="/unknown"
           className="text-center text-xs text-cream-dim underline transition-colors hover:text-emerald-bright"
         >
           Back to sign in

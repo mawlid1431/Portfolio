@@ -16,11 +16,19 @@ export default function AdminLoginPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Destination set by the middleware's ?next= param; only same-site paths allowed.
+  const nextPath = () => {
+    const next = new URLSearchParams(window.location.search).get("next");
+    return next && next.startsWith("/") && !next.startsWith("//")
+      ? next
+      : "/unknown/dashboard";
+  };
+
   useEffect(() => {
     void fetch("/api/auth/me", { credentials: "same-origin" })
       .then((res) => (res.ok ? res.json() : null))
       .then((body) => {
-        if (body?.admin) router.replace("/admin/dashboard");
+        if (body?.admin) router.replace(nextPath());
       });
   }, [router]);
 
@@ -46,7 +54,7 @@ export default function AdminLoginPage() {
         throw new Error(body.error ?? "Invalid credentials");
       }
 
-      router.push("/admin/dashboard");
+      router.push(nextPath());
     } catch (err) {
       setError(
         err instanceof Error
@@ -171,7 +179,7 @@ export default function AdminLoginPage() {
               expires in 15 minutes.
             </p>
             <GlassButton
-              href={`/admin/reset-password?email=${encodeURIComponent(forgotEmail)}`}
+              href={`/unknown/reset-password?email=${encodeURIComponent(forgotEmail)}`}
               variant="accent"
               size="md"
               className="mt-8"

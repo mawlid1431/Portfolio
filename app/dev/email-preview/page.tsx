@@ -23,7 +23,7 @@ export default function DevEmailPreviewPage() {
             </p>
           </div>
           <Link
-            href="/admin"
+            href="/unknown"
             className="text-xs text-cream-dim underline hover:text-emerald-bright"
           >
             Back to admin

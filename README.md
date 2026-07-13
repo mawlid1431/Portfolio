@@ -574,7 +574,7 @@ curl -X POST http://localhost:3000/api/setup \
   }'
 ```
 
-Then sign in at **[http://localhost:3000/admin](http://localhost:3000/admin)**.
+Then sign in at **[http://localhost:3000/unknown](http://localhost:3000/unknown)**.
 
 ## 5.3 Day-to-day development
 
@@ -678,9 +678,9 @@ bunx convex dev               bun dev
 
 | Route | File | Auth | Description |
 |-------|------|:----:|-------------|
-| `/admin` | `app/admin/page.tsx` | — | Login + forgot password |
-| `/admin/dashboard` | `app/admin/dashboard/page.tsx` | ✅ | CMS dashboard (8 panels) |
-| `/admin/reset-password` | `app/admin/reset-password/page.tsx` | — | Enter 6-digit reset code |
+| `/unknown` | `app/unknown/page.tsx` | — | Login + forgot password |
+| `/unknown/dashboard` | `app/unknown/dashboard/page.tsx` | ✅ | CMS dashboard (8 panels) |
+| `/unknown/reset-password` | `app/unknown/reset-password/page.tsx` | — | Enter 6-digit reset code |
 
 ## 7.3 API routes
 
@@ -875,10 +875,10 @@ flowchart LR
 
 ## 8.4 Forgot password (admin)
 
-1. Go to `/admin` → **Forgot password?**
+1. Go to `/unknown` → **Forgot password?**
 2. Enter admin email → 6-digit code sent via email
 3. UI shows masked email: `ma••••••@gmail.com`
-4. Click **Enter reset code** → `/admin/reset-password`
+4. Click **Enter reset code** → `/unknown/reset-password`
 5. Enter email + code + new password
 6. All existing sessions are invalidated
 
@@ -1094,7 +1094,7 @@ bun run build:local
 ## 12.3 Reset admin password (manual)
 
 If locked out:
-1. Use **Forgot password** flow on `/admin`
+1. Use **Forgot password** flow on `/unknown`
 2. Or create a new reset token via Convex dashboard (advanced)
 
 ---
@@ -1103,7 +1103,7 @@ If locked out:
 
 | Term | Definition |
 |------|------------|
-| **CMS** | Content Management System — the `/admin/dashboard` panels |
+| **CMS** | Content Management System — the `/unknown/dashboard` panels |
 | **Convex** | Backend platform — database + server functions in TypeScript |
 | **tokenHash** | SHA-256 hash of session token; sent to Convex for auth |
 | **public query** | Convex query callable without auth; used on public pages |

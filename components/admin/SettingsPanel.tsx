@@ -106,7 +106,7 @@ export default function SettingsPanel() {
     }
 
     if (body.loggedOut) {
-      router.push("/admin");
+      router.push("/unknown");
       return;
     }
 
@@ -123,7 +123,7 @@ export default function SettingsPanel() {
           Preview transactional emails and send a test to your inbox.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Link href="/admin/dashboard/email-preview" className={btnPrimary}>
+          <Link href="/unknown/dashboard/email-preview" className={btnPrimary}>
             Open email preview
           </Link>
           {process.env.NODE_ENV === "development" && (

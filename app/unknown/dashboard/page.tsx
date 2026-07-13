@@ -23,12 +23,12 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState<AdminTab>("overview");
 
   useEffect(() => {
-    if (!loading && !admin) router.replace("/admin");
+    if (!loading && !admin) router.replace("/unknown");
   }, [loading, admin, router]);
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
-    router.push("/admin");
+    router.push("/unknown");
   };
 
   if (loading) {

@@ -37,10 +37,10 @@ export function proxy(request: NextRequest) {
     return applySecurityHeaders(response);
   }
 
-  if (pathname.startsWith("/admin/dashboard")) {
+  if (pathname.startsWith("/unknown/dashboard")) {
     const session = request.cookies.get(SESSION_COOKIE)?.value;
     if (!session) {
-      const login = new URL("/admin", request.url);
+      const login = new URL("/unknown", request.url);
       login.searchParams.set("next", pathname);
       return NextResponse.redirect(login);
     }
@@ -50,5 +50,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/dashboard/:path*", "/api/:path*"],
+  matcher: ["/unknown/dashboard/:path*", "/api/:path*"],
 };
