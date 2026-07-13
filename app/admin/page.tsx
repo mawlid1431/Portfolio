@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import GlassButton from "@/components/GlassButton";
 import PasswordInput from "@/components/PasswordInput";
+import ThemeToggle from "@/components/ThemeToggle";
 import { maskEmail } from "@/lib/mask-email";
 
 export default function AdminLoginPage() {
@@ -94,7 +95,10 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6">
+    <main className="relative flex min-h-screen items-center justify-center px-6">
+      <div className="absolute right-4 top-4 z-10 pt-safe sm:right-6 sm:top-6">
+        <ThemeToggle />
+      </div>
       <div className="orb absolute left-1/2 top-1/2 h-[50vh] w-[50vh] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-glow/10 blur-3xl" />
 
       <div className="relative w-full max-w-md rounded-2xl border border-emerald-glow/25 bg-ink-soft/80 p-6 backdrop-blur sm:p-10">

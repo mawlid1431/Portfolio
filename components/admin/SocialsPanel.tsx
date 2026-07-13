@@ -4,8 +4,9 @@ import { FormEvent, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import AdminModal from "./AdminModal";
+import AdminRowActions from "./AdminRowActions";
 import {
-  btnDanger,
   btnGhost,
   btnPrimary,
   cardClass,
@@ -15,7 +16,23 @@ import {
 } from "@/lib/admin-hooks";
 
 type Draft = { label: string; href: string; sortOrder: number };
+
+type SocialItem = NonNullable<
+  ReturnType<typeof useQuery<typeof api.socialLinks.list>>
+>[number];
+
+type ModalMode = "closed" | "create" | "edit" | "view";
+
 const empty: Draft = { label: "", href: "", sortOrder: 0 };
+
+function ViewField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className={labelClass}>{label}</p>
+      <p className="mt-1 break-all text-sm text-cream">{value}</p>
+    </div>
+  );
+}
 
 export default function SocialsPanel() {
   const tokenHash = useAdminTokenHash();
@@ -29,7 +46,38 @@ export default function SocialsPanel() {
 
   const [draft, setDraft] = useState<Draft>(empty);
   const [editingId, setEditingId] = useState<Id<"socialLinks"> | null>(null);
-  const [open, setOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>("closed");
+  const [viewItem, setViewItem] = useState<SocialItem | null>(null);
+
+  const closeModal = () => {
+    setModalMode("closed");
+    setEditingId(null);
+    setViewItem(null);
+    setDraft(empty);
+  };
+
+  const openCreate = () => {
+    setEditingId(null);
+    setViewItem(null);
+    setDraft({ ...empty, sortOrder: items?.length ?? 0 });
+    setModalMode("create");
+  };
+
+  const openEdit = (item: SocialItem) => {
+    setEditingId(item._id);
+    setViewItem(null);
+    setDraft({
+      label: item.label,
+      href: item.href,
+      sortOrder: item.sortOrder,
+    });
+    setModalMode("edit");
+  };
+
+  const openView = (item: SocialItem) => {
+    setViewItem(item);
+    setModalMode("view");
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -39,84 +87,111 @@ export default function SocialsPanel() {
     } else {
       await create({ tokenHash, ...draft });
     }
-    setDraft(empty);
-    setEditingId(null);
-    setOpen(false);
+    closeModal();
   };
 
   if (!tokenHash || items === undefined) {
     return <p className="text-sm text-cream-dim">Loading social links…</p>;
   }
 
+  const isFormOpen = modalMode === "create" || modalMode === "edit";
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-end">
-        <button
-          type="button"
-          className={btnPrimary}
-          onClick={() => {
-            setEditingId(null);
-            setDraft({ ...empty, sortOrder: items.length });
-            setOpen(true);
-          }}
-        >
+        <button type="button" className={btnPrimary} onClick={openCreate}>
           Add link
         </button>
       </div>
 
-      {open && (
-        <form onSubmit={onSubmit} className={`${cardClass} flex flex-col gap-4`}>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className={labelClass}>Platform</label>
-              <input
-                className={inputClass}
-                value={draft.label}
-                onChange={(e) => setDraft({ ...draft, label: e.target.value })}
-                placeholder="GitHub"
-                required
-              />
+      <AdminModal
+        open={modalMode !== "closed"}
+        onClose={closeModal}
+        title={
+          modalMode === "create"
+            ? "New social link"
+            : modalMode === "edit"
+              ? "Edit social link"
+              : "Social link details"
+        }
+        size="md"
+        footer={
+          modalMode === "view" ? (
+            <>
+              <button type="button" className={btnGhost} onClick={closeModal}>
+                Close
+              </button>
+              {viewItem && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => openEdit(viewItem)}
+                >
+                  Edit
+                </button>
+              )}
+            </>
+          ) : isFormOpen ? (
+            <>
+              <button type="button" className={btnGhost} onClick={closeModal}>
+                Cancel
+              </button>
+              <button type="submit" form="social-form" className={btnPrimary}>
+                Save
+              </button>
+            </>
+          ) : undefined
+        }
+      >
+        {modalMode === "view" && viewItem ? (
+          <div className="flex flex-col gap-4">
+            <ViewField label="Platform" value={viewItem.label} />
+            <ViewField label="URL" value={viewItem.href} />
+            <ViewField label="Sort order" value={String(viewItem.sortOrder)} />
+          </div>
+        ) : isFormOpen ? (
+          <form id="social-form" onSubmit={onSubmit} className="flex flex-col gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className={labelClass}>Platform</label>
+                <input
+                  className={inputClass}
+                  value={draft.label}
+                  onChange={(e) => setDraft({ ...draft, label: e.target.value })}
+                  placeholder="GitHub"
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClass}>URL</label>
+                <input
+                  className={inputClass}
+                  type="url"
+                  value={draft.href}
+                  onChange={(e) => setDraft({ ...draft, href: e.target.value })}
+                  placeholder="https://"
+                  required
+                />
+              </div>
             </div>
             <div>
-              <label className={labelClass}>URL</label>
+              <label className={labelClass}>Sort order</label>
               <input
+                type="number"
                 className={inputClass}
-                type="url"
-                value={draft.href}
-                onChange={(e) => setDraft({ ...draft, href: e.target.value })}
-                placeholder="https://"
-                required
+                value={draft.sortOrder}
+                onChange={(e) =>
+                  setDraft({ ...draft, sortOrder: Number(e.target.value) })
+                }
               />
             </div>
-          </div>
-          <div>
-            <label className={labelClass}>Sort order</label>
-            <input
-              type="number"
-              className={inputClass}
-              value={draft.sortOrder}
-              onChange={(e) =>
-                setDraft({ ...draft, sortOrder: Number(e.target.value) })
-              }
-            />
-          </div>
-          <div className="flex gap-3">
-            <button type="submit" className={btnPrimary}>
-              Save
-            </button>
-            <button type="button" className={btnGhost} onClick={() => setOpen(false)}>
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
+          </form>
+        ) : null}
+      </AdminModal>
 
-      <div className="flex flex-col gap-3 md:hidden">
+      <div className="grid gap-3 lg:hidden">
         {items.map((s) => (
-          <div
-            key={s._id}
-            className="rounded-2xl border border-cream/10 bg-ink-soft/70 p-4"
-          >
+          <div key={s._id} className={cardClass}>
             <p className="font-medium">{s.label}</p>
             <a
               href={s.href}
@@ -126,36 +201,18 @@ export default function SocialsPanel() {
             >
               {s.href}
             </a>
-            <p className="mt-2 text-xs text-cream-dim">Order: {s.sortOrder}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                className={btnGhost}
-                onClick={() => {
-                  setEditingId(s._id);
-                  setDraft({
-                    label: s.label,
-                    href: s.href,
-                    sortOrder: s.sortOrder,
-                  });
-                  setOpen(true);
-                }}
-              >
-                Edit
-              </button>
-              <button
-                type="button"
-                className={btnDanger}
-                onClick={() => void remove({ tokenHash, socialId: s._id })}
-              >
-                Delete
-              </button>
+            <div className="mt-4">
+              <AdminRowActions
+                onView={() => openView(s)}
+                onEdit={() => openEdit(s)}
+                onDelete={() => void remove({ tokenHash, socialId: s._id })}
+              />
             </div>
           </div>
         ))}
       </div>
 
-      <div className="hidden overflow-x-auto rounded-2xl border border-cream/10 bg-ink-soft/70 md:block">
+      <div className="hidden overflow-x-auto rounded-2xl border border-cream/10 bg-ink-soft/70 lg:block">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-cream/10 text-xs uppercase tracking-[0.2em] text-cream-dim">
@@ -181,32 +238,11 @@ export default function SocialsPanel() {
                 </td>
                 <td className="p-4 text-cream-dim">{s.sortOrder}</td>
                 <td className="p-4">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnGhost}
-                      onClick={() => {
-                        setEditingId(s._id);
-                        setDraft({
-                          label: s.label,
-                          href: s.href,
-                          sortOrder: s.sortOrder,
-                        });
-                        setOpen(true);
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className={btnDanger}
-                      onClick={() =>
-                        void remove({ tokenHash, socialId: s._id })
-                      }
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  <AdminRowActions
+                    onView={() => openView(s)}
+                    onEdit={() => openEdit(s)}
+                    onDelete={() => void remove({ tokenHash, socialId: s._id })}
+                  />
                 </td>
               </tr>
             ))}

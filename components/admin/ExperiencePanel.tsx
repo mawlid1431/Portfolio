@@ -4,8 +4,9 @@ import { FormEvent, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import AdminModal from "./AdminModal";
+import AdminRowActions from "./AdminRowActions";
 import {
-  btnDanger,
   btnGhost,
   btnPrimary,
   cardClass,
@@ -22,6 +23,12 @@ type Draft = {
   sortOrder: number;
 };
 
+type ExperienceItem = NonNullable<
+  ReturnType<typeof useQuery<typeof api.experiences.list>>
+>[number];
+
+type ModalMode = "closed" | "create" | "edit" | "view";
+
 const empty: Draft = {
   role: "",
   org: "",
@@ -29,6 +36,15 @@ const empty: Draft = {
   text: "",
   sortOrder: 0,
 };
+
+function ViewField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className={labelClass}>{label}</p>
+      <p className="mt-1 whitespace-pre-wrap text-sm text-cream">{value}</p>
+    </div>
+  );
+}
 
 export default function ExperiencePanel() {
   const tokenHash = useAdminTokenHash();
@@ -42,7 +58,40 @@ export default function ExperiencePanel() {
 
   const [draft, setDraft] = useState<Draft>(empty);
   const [editingId, setEditingId] = useState<Id<"experiences"> | null>(null);
-  const [open, setOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>("closed");
+  const [viewItem, setViewItem] = useState<ExperienceItem | null>(null);
+
+  const closeModal = () => {
+    setModalMode("closed");
+    setEditingId(null);
+    setViewItem(null);
+    setDraft(empty);
+  };
+
+  const openCreate = () => {
+    setEditingId(null);
+    setViewItem(null);
+    setDraft({ ...empty, sortOrder: items?.length ?? 0 });
+    setModalMode("create");
+  };
+
+  const openEdit = (item: ExperienceItem) => {
+    setEditingId(item._id);
+    setViewItem(null);
+    setDraft({
+      role: item.role,
+      org: item.org,
+      period: item.period,
+      text: item.text,
+      sortOrder: item.sortOrder,
+    });
+    setModalMode("edit");
+  };
+
+  const openView = (item: ExperienceItem) => {
+    setViewItem(item);
+    setModalMode("view");
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -52,95 +101,133 @@ export default function ExperiencePanel() {
     } else {
       await create({ tokenHash, ...draft });
     }
-    setDraft(empty);
-    setEditingId(null);
-    setOpen(false);
+    closeModal();
   };
 
   if (!tokenHash || items === undefined) {
     return <p className="text-sm text-cream-dim">Loading experience…</p>;
   }
 
+  const isFormOpen = modalMode === "create" || modalMode === "edit";
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex justify-end">
-        <button
-          type="button"
-          className={btnPrimary}
-          onClick={() => {
-            setEditingId(null);
-            setDraft({ ...empty, sortOrder: items.length });
-            setOpen(true);
-          }}
-        >
+        <button type="button" className={btnPrimary} onClick={openCreate}>
           Add experience
         </button>
       </div>
 
-      {open && (
-        <form onSubmit={onSubmit} className={`${cardClass} flex flex-col gap-4`}>
-          <div className="grid gap-4 md:grid-cols-2">
+      <AdminModal
+        open={modalMode !== "closed"}
+        onClose={closeModal}
+        title={
+          modalMode === "create"
+            ? "New experience"
+            : modalMode === "edit"
+              ? "Edit experience"
+              : "Experience details"
+        }
+        size="lg"
+        footer={
+          modalMode === "view" ? (
+            <>
+              <button type="button" className={btnGhost} onClick={closeModal}>
+                Close
+              </button>
+              {viewItem && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => openEdit(viewItem)}
+                >
+                  Edit
+                </button>
+              )}
+            </>
+          ) : isFormOpen ? (
+            <>
+              <button type="button" className={btnGhost} onClick={closeModal}>
+                Cancel
+              </button>
+              <button type="submit" form="experience-form" className={btnPrimary}>
+                Save
+              </button>
+            </>
+          ) : undefined
+        }
+      >
+        {modalMode === "view" && viewItem ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ViewField label="Role" value={viewItem.role} />
+            <ViewField label="Organization" value={viewItem.org} />
+            <ViewField label="Period" value={viewItem.period} />
+            <ViewField label="Sort order" value={String(viewItem.sortOrder)} />
+            <div className="sm:col-span-2">
+              <ViewField label="Description" value={viewItem.text} />
+            </div>
+          </div>
+        ) : isFormOpen ? (
+          <form
+            id="experience-form"
+            onSubmit={onSubmit}
+            className="flex flex-col gap-4"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className={labelClass}>Role</label>
+                <input
+                  className={inputClass}
+                  value={draft.role}
+                  onChange={(e) => setDraft({ ...draft, role: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Organization</label>
+                <input
+                  className={inputClass}
+                  value={draft.org}
+                  onChange={(e) => setDraft({ ...draft, org: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className={labelClass}>Period</label>
+                <input
+                  className={inputClass}
+                  value={draft.period}
+                  onChange={(e) => setDraft({ ...draft, period: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Sort order</label>
+                <input
+                  type="number"
+                  className={inputClass}
+                  value={draft.sortOrder}
+                  onChange={(e) =>
+                    setDraft({ ...draft, sortOrder: Number(e.target.value) })
+                  }
+                />
+              </div>
+            </div>
             <div>
-              <label className={labelClass}>Role</label>
-              <input
+              <label className={labelClass}>Description</label>
+              <textarea
                 className={inputClass}
-                value={draft.role}
-                onChange={(e) => setDraft({ ...draft, role: e.target.value })}
+                rows={4}
+                value={draft.text}
+                onChange={(e) => setDraft({ ...draft, text: e.target.value })}
                 required
               />
             </div>
-            <div>
-              <label className={labelClass}>Organization</label>
-              <input
-                className={inputClass}
-                value={draft.org}
-                onChange={(e) => setDraft({ ...draft, org: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className={labelClass}>Period</label>
-              <input
-                className={inputClass}
-                value={draft.period}
-                onChange={(e) => setDraft({ ...draft, period: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Sort order</label>
-              <input
-                type="number"
-                className={inputClass}
-                value={draft.sortOrder}
-                onChange={(e) =>
-                  setDraft({ ...draft, sortOrder: Number(e.target.value) })
-                }
-              />
-            </div>
-          </div>
-          <div>
-            <label className={labelClass}>Description</label>
-            <textarea
-              className={inputClass}
-              rows={4}
-              value={draft.text}
-              onChange={(e) => setDraft({ ...draft, text: e.target.value })}
-              required
-            />
-          </div>
-          <div className="flex gap-3">
-            <button type="submit" className={btnPrimary}>
-              Save
-            </button>
-            <button type="button" className={btnGhost} onClick={() => setOpen(false)}>
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
+          </form>
+        ) : null}
+      </AdminModal>
 
       <div className="flex flex-col gap-4">
         {items.map((e) => (
@@ -151,36 +238,17 @@ export default function ExperiencePanel() {
                 <p className="text-sm text-emerald-bright">{e.org}</p>
                 <p className="mt-1 text-xs text-cream-dim">{e.period}</p>
               </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  className={btnGhost}
-                  onClick={() => {
-                    setEditingId(e._id);
-                    setDraft({
-                      role: e.role,
-                      org: e.org,
-                      period: e.period,
-                      text: e.text,
-                      sortOrder: e.sortOrder,
-                    });
-                    setOpen(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  className={btnDanger}
-                  onClick={() =>
-                    void remove({ tokenHash, experienceId: e._id })
-                  }
-                >
-                  Delete
-                </button>
-              </div>
             </div>
-            <p className="mt-4 text-sm text-cream-dim">{e.text}</p>
+            <p className="mt-4 line-clamp-2 text-sm text-cream-dim">{e.text}</p>
+            <div className="mt-4">
+              <AdminRowActions
+                onView={() => openView(e)}
+                onEdit={() => openEdit(e)}
+                onDelete={() =>
+                  void remove({ tokenHash, experienceId: e._id })
+                }
+              />
+            </div>
           </div>
         ))}
       </div>
