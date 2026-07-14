@@ -6,13 +6,13 @@ import GlassButton from "@/components/GlassButton";
 import Portrait from "@/components/Portrait";
 import Reveal from "@/components/Reveal";
 import { fetchPublicProjects, fetchProjectBySlug } from "@/lib/projects-server";
-import { projectImageUrl, STATIC_PROJECTS } from "@/lib/projects";
+import { projectImageUrl } from "@/lib/projects";
+
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const projects = await fetchPublicProjects();
-  const slugs = new Set(projects.map((p) => p.slug));
-  for (const p of STATIC_PROJECTS) slugs.add(p.slug);
-  return [...slugs].map((slug) => ({ slug }));
+  return projects.map((p) => ({ slug: p.slug }));
 }
 
 type Props = { params: Promise<{ slug: string }> };

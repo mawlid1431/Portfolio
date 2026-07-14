@@ -19,6 +19,8 @@ export const metadata: Metadata = {
     "Software Engineer and AI Innovator from Somaliland, based in Malaysia. 30+ live projects in production.",
 };
 
+export const revalidate = 60;
+
 export default async function AboutPage() {
   const [images, experience, education, techStack] = await Promise.all([
     fetchSiteImageMap(),
@@ -128,6 +130,7 @@ export default async function AboutPage() {
       </section>
 
       {/* experience */}
+      {experience.length > 0 && (
       <section className="border-t border-cream/10 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
@@ -161,8 +164,10 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* education */}
+      {education.length > 0 && (
       <section className="relative overflow-hidden border-t border-cream/10 py-24">
         <div className="absolute inset-y-0 right-0 hidden w-1/3 opacity-40 md:block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -204,8 +209,10 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* tech stack */}
+      {techStack.length > 0 && (
       <section className="border-t border-cream/10 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
@@ -243,6 +250,7 @@ export default async function AboutPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* cta */}
       <section className="border-t border-cream/10 py-24 text-center">

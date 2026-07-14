@@ -14,6 +14,39 @@ export type UploadResult = {
   height: number;
 };
 
+export type LibraryAsset = {
+  publicId: string;
+  url: string;
+  resourceType: "image" | "video";
+  createdAt: string;
+};
+
+/** List uploaded assets in the account (newest first). */
+export async function listCloudinaryAssets(
+  resourceType: "image" | "video",
+  maxResults = 100,
+): Promise<LibraryAsset[]> {
+  const result = (await cloudinary.api.resources({
+    type: "upload",
+    resource_type: resourceType,
+    max_results: maxResults,
+    direction: "desc",
+  })) as {
+    resources: Array<{
+      public_id: string;
+      secure_url: string;
+      created_at: string;
+    }>;
+  };
+
+  return result.resources.map((r) => ({
+    publicId: r.public_id,
+    url: r.secure_url,
+    resourceType,
+    createdAt: r.created_at,
+  }));
+}
+
 export async function uploadToCloudinary(
   file: Buffer,
   options: {

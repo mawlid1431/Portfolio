@@ -2,10 +2,12 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireSession } from "./lib/session";
 import {
+  defaultEducation,
   defaultExperience,
   defaultFaqs,
   defaultImages,
   defaultProjects,
+  defaultSkillGroups,
   defaultSocials,
 } from "./lib/seedData";
 
@@ -54,6 +56,8 @@ export const importDefaults = mutation({
     experiences: v.number(),
     faqs: v.number(),
     socials: v.number(),
+    educations: v.number(),
+    skillGroups: v.number(),
   }),
   handler: async (ctx, args) => {
     await requireSession(ctx, args.tokenHash);
@@ -63,6 +67,8 @@ export const importDefaults = mutation({
     let experiences = 0;
     let faqs = 0;
     let socials = 0;
+    let educations = 0;
+    let skillGroups = 0;
 
     for (const p of defaultProjects) {
       const exists = await ctx.db
@@ -112,6 +118,25 @@ export const importDefaults = mutation({
       }
     }
 
-    return { projects, images, experiences, faqs, socials };
+    if ((await ctx.db.query("educations").collect()).length === 0) {
+      for (const e of defaultEducation) {
+        await ctx.db.insert("educations", { ...e, createdAt: now, updatedAt: now });
+        educations++;
+      }
+    }
+
+    if ((await ctx.db.query("skillGroups").collect()).length === 0) {
+      for (const s of defaultSkillGroups) {
+        await ctx.db.insert("skillGroups", {
+          ...s,
+          items: [...s.items],
+          createdAt: now,
+          updatedAt: now,
+        });
+        skillGroups++;
+      }
+    }
+
+    return { projects, images, experiences, faqs, socials, educations, skillGroups };
   },
 });

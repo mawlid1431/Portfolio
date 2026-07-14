@@ -1,5 +1,4 @@
 import { cloudinaryUrl, cloudinaryVideoUrl } from "./cloudinary";
-import { IMAGES } from "./data";
 import { api, getConvexClient } from "./convex";
 
 export type SiteImageKey =
@@ -21,24 +20,10 @@ const DEFAULT_PATHS: SiteImageMap = {
   "about-showreel": "devmalitos/about-showreel",
 };
 
-/** Paths from static fallbacks (full URLs in data.ts). */
-function pathsFromStatic(): SiteImageMap {
-  const extract = (url: string) => {
-    const match = url.match(/\/upload\/[^/]+\/(.+)$/);
-    return match?.[1] ?? "";
-  };
-  return {
-    hero: extract(IMAGES.hero) || DEFAULT_PATHS.hero,
-    working: extract(IMAGES.working) || DEFAULT_PATHS.working,
-    portrait: extract(IMAGES.portrait) || DEFAULT_PATHS.portrait,
-    flag: extract(IMAGES.flag) || DEFAULT_PATHS.flag,
-    graduation: extract(IMAGES.graduation) || DEFAULT_PATHS.graduation,
-    "about-showreel": DEFAULT_PATHS["about-showreel"],
-  };
-}
-
 export async function fetchSiteImageMap(): Promise<SiteImageMap> {
-  const fallback = pathsFromStatic();
+  // DEFAULT_PATHS are Cloudinary path conventions, not content — they let the
+  // site render even before an image record exists for a section.
+  const fallback = { ...DEFAULT_PATHS };
 
   try {
     const client = getConvexClient();

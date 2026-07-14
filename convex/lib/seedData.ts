@@ -232,3 +232,84 @@ export const defaultSocials = [
     sortOrder: 7,
   },
 ] as const;
+
+export const defaultEducation = [
+  {
+    title: "Bachelor of Computer Science",
+    org: "Albukhary International University, Malaysia",
+    period: "Current",
+    text: "Focused on software engineering and web technologies.",
+    sortOrder: 0,
+  },
+  {
+    title: "IBM Full Stack Developer",
+    org: "IBM Professional Certificate",
+    period: "2025",
+    text: "Advanced full-stack development with enterprise-level technologies and cloud computing.",
+    sortOrder: 1,
+  },
+  {
+    title: "Google Project Management Certificate",
+    org: "Google",
+    period: "Dec 2023 — Aug 2024",
+    text: "Project planning, agile methodologies, stakeholder management, risk assessment and leadership.",
+    sortOrder: 2,
+  },
+  {
+    title: "Full Stack Web Developer",
+    org: "FikrCamp",
+    period: "2023 — 2024",
+    text: "Comprehensive full-stack program covering modern web technologies and best practices.",
+    sortOrder: 3,
+  },
+  {
+    title: "Software Engineering Graduate",
+    org: "ALX Africa",
+    period: "Completed",
+    text: "Rigorous software engineering program.",
+    sortOrder: 4,
+  },
+  {
+    title: "Digital School Graduate",
+    org: "Hargabits Digital School",
+    period: "Completed",
+    text: "Digital skills and technology training.",
+    sortOrder: 5,
+  },
+] as const;
+
+export const defaultSkillGroups = [
+  {
+    group: "Frontend Engineering",
+    items: ["TypeScript", "JavaScript", "React", "Next.js", "Vite", "Tailwind CSS"],
+    sortOrder: 0,
+  },
+  { group: "Mobile Development", items: ["React Native", "Expo", "iOS"], sortOrder: 1 },
+  { group: "Backend & API", items: ["Python", "Django", "Node.js", "Express.js"], sortOrder: 2 },
+  {
+    group: "Databases & BaaS",
+    items: ["PostgreSQL", "MySQL", "MongoDB", "Supabase", "Firebase"],
+    sortOrder: 3,
+  },
+  { group: "Auth & Modern Infrastructure", items: ["Convex", "Supabase", "Clerk"], sortOrder: 4 },
+  {
+    group: "Payment Gateways",
+    items: ["Stripe", "PayPal", "Billplz", "iPay88", "ToyyibPay"],
+    sortOrder: 5,
+  },
+  {
+    group: "Cloud, AI & DevOps",
+    items: ["AWS", "Git & GitHub", "OpenAI", "Claude AI", "GitHub Copilot"],
+    sortOrder: 6,
+  },
+  {
+    group: "UI/UX Design",
+    items: ["Figma", "Adobe Suite", "Google Stitch", "UI/UX Design"],
+    sortOrder: 7,
+  },
+  {
+    group: "Agile & Project Management",
+    items: ["Jira", "ClickUp", "Notion", "Asana", "Trello", "Slack"],
+    sortOrder: 8,
+  },
+] as const;

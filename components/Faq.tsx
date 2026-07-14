@@ -3,12 +3,13 @@
 import { useRef, useState } from "react";
 import { useInView } from "./useSectionProgress";
 import type { PublicFaq } from "@/lib/cms-server";
-import { FAQS } from "@/lib/data";
 
-export default function Faq({ items = FAQS }: { items?: PublicFaq[] }) {
+export default function Faq({ items }: { items: PublicFaq[] }) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, 0.15);
   const [openIdx, setOpenIdx] = useState<number | null>(0);
+
+  if (items.length === 0) return null;
 
   return (
     <section ref={ref} className="py-32">

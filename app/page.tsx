@@ -11,6 +11,8 @@ import { fetchSiteImageMap, resolveSiteImage } from "@/lib/images-server";
 import { fetchPublicFaqs } from "@/lib/cms-server";
 import { fetchPublicProjects } from "@/lib/projects-server";
 
+export const revalidate = 60;
+
 export default async function Home() {
   const [images, projects, faqs] = await Promise.all([
     fetchSiteImageMap(),

@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     "Let's create something amazing together. Reach out and let's start building your vision.",
 };
 
+export const revalidate = 60;
+
 export default async function ContactPage() {
   const [images, socials] = await Promise.all([
     fetchSiteImageMap(),

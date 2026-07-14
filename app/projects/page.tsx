@@ -11,6 +11,8 @@ export const metadata: Metadata = {
     "Successful projects: platforms for communities, fintech, nonprofits, events and more.",
 };
 
+export const revalidate = 60;
+
 export default async function ProjectsPage() {
   const projects = await fetchPublicProjects();
 
