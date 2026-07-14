@@ -117,9 +117,9 @@ export default function ImagesPanel() {
     const existing = images?.find((i) => i.key === section.key);
     setKey(section.key);
     setLabel(existing?.label ?? section.label);
-    setCloudinaryPath(
-      existing?.cloudinaryPath ?? `devmalitos/${section.key}`,
-    );
+    // No pre-filled path for empty slots — otherwise a previously deleted
+    // asset at the default path would reappear in the preview.
+    setCloudinaryPath(existing?.cloudinaryPath ?? "");
     setViewItem(null);
     setModalMode("form");
   };
@@ -142,6 +142,21 @@ export default function ImagesPanel() {
     setDeleting(true);
     try {
       await remove({ tokenHash, imageId: deleteTarget._id });
+      // Also delete the actual file from Cloudinary so it doesn't reappear.
+      try {
+        await fetch("/api/upload", {
+          method: "DELETE",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            publicId: deleteTarget.cloudinaryPath,
+            resourceType:
+              deleteTarget.key === "about-showreel" ? "video" : "image",
+          }),
+        });
+      } catch {
+        // Record is gone either way; asset cleanup is best-effort.
+      }
       setDeleteTarget(null);
       if (viewItem?._id === deleteTarget._id) closeModal();
     } finally {

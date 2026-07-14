@@ -47,6 +47,18 @@ export async function listCloudinaryAssets(
   }));
 }
 
+/** Permanently delete an asset from Cloudinary (invalidates CDN cache). */
+export async function destroyCloudinaryAsset(
+  publicId: string,
+  resourceType: "image" | "video",
+): Promise<boolean> {
+  const result = (await cloudinary.uploader.destroy(publicId, {
+    resource_type: resourceType,
+    invalidate: true,
+  })) as { result?: string };
+  return result.result === "ok" || result.result === "not found";
+}
+
 export async function uploadToCloudinary(
   file: Buffer,
   options: {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { api, getConvexClient } from "@/lib/convex";
 import { getSessionTokenHash } from "@/lib/session-server";
-import { uploadToCloudinary } from "@/lib/cloudinary-server";
+import { destroyCloudinaryAsset, uploadToCloudinary } from "@/lib/cloudinary-server";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -84,5 +84,41 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const tokenHash = await getSessionTokenHash();
+    if (!tokenHash) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const client = getConvexClient();
+    const session = await client.query(api.auth.me, { tokenHash });
+    if (!session) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as {
+      publicId?: string;
+      resourceType?: string;
+    };
+    const publicId = body.publicId?.trim() ?? "";
+    const resourceType = body.resourceType === "video" ? "video" : "image";
+
+    // Only allow deleting assets inside this project's media folders
+    if (!/^devmalitos(\/[a-z0-9_-]+)+$/i.test(publicId)) {
+      return NextResponse.json({ error: "Invalid asset path" }, { status: 400 });
+    }
+
+    const ok = await destroyCloudinaryAsset(publicId, resourceType);
+    return NextResponse.json({ ok });
+  } catch (error) {
+    console.error("Delete asset error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete asset" },
+      { status: 500 },
+    );
   }
 }
