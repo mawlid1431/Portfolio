@@ -167,33 +167,69 @@ export default function CloudinaryUpload({
       return;
     }
 
+    const video = resourceType === "video";
+    const maxBytes = video ? 50 * 1024 * 1024 : 8 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setError(
+        video
+          ? "Video must be smaller than 50 MB"
+          : "Image must be smaller than 8 MB",
+      );
+      return;
+    }
+
     setUploading(true);
     setError("");
 
     try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("folder", folder);
-      if (publicId) form.append("publicId", publicId);
-
-      const res = await fetch("/api/upload", {
+      // Get a signature from our server, then upload the file straight to
+      // Cloudinary — Vercel caps request bodies at ~4.5 MB, so the file
+      // itself must never pass through our own API.
+      const signRes = await fetch("/api/upload/sign", {
         method: "POST",
         credentials: "same-origin",
-        body: form,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder, publicId }),
       });
-      const body = (await res.json()) as {
-        publicId?: string;
-        url?: string;
+      const sign = (await signRes.json()) as {
+        signature?: string;
+        timestamp?: number;
+        folder?: string;
+        publicId?: string | null;
+        apiKey?: string;
+        cloudName?: string;
         error?: string;
       };
-
-      if (!res.ok || !body.publicId || !body.url) {
-        throw new Error(body.error ?? "Upload failed");
+      if (!signRes.ok || !sign.signature || !sign.apiKey || !sign.cloudName) {
+        throw new Error(sign.error ?? "Upload failed");
       }
 
-      setPreview(body.publicId);
+      const form = new FormData();
+      form.append("file", file);
+      form.append("api_key", sign.apiKey);
+      form.append("timestamp", String(sign.timestamp));
+      form.append("signature", sign.signature);
+      form.append("folder", sign.folder ?? folder);
+      form.append("overwrite", "true");
+      if (sign.publicId) form.append("public_id", sign.publicId);
+
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${sign.cloudName}/${video ? "video" : "image"}/upload`,
+        { method: "POST", body: form },
+      );
+      const body = (await uploadRes.json()) as {
+        public_id?: string;
+        secure_url?: string;
+        error?: { message?: string };
+      };
+
+      if (!uploadRes.ok || !body.public_id || !body.secure_url) {
+        throw new Error(body.error?.message ?? "Upload failed");
+      }
+
+      setPreview(body.public_id);
       setPreviewBroken(false);
-      onUploaded(body.publicId, body.url);
+      onUploaded(body.public_id, body.secure_url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
