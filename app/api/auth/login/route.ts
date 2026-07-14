@@ -45,6 +45,8 @@ export async function POST(request: Request) {
     const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE, rawToken, {
       httpOnly: true,
+      // Always Secure in production (required by the __Host- prefix); off in
+      // dev so http://localhost login still works.
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: SESSION_MAX_AGE,
@@ -53,8 +55,17 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, admin });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Login failed";
-    return NextResponse.json({ error: message }, { status: 401 });
+    console.error("Login error:", error);
+    const raw = error instanceof Error ? error.message : "";
+    if (/Too many/i.test(raw)) {
+      return NextResponse.json(
+        { error: raw },
+        { status: 429, headers: { "Retry-After": "900" } },
+      );
+    }
+    const safe = /Invalid email or password/i.test(raw)
+      ? raw
+      : "Login failed. Please try again.";
+    return NextResponse.json({ error: safe }, { status: 401 });
   }
 }

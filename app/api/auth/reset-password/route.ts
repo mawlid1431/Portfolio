@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resetTokenHash } from "@/lib/auth";
+import { rateLimitKey, resetTokenHash } from "@/lib/auth";
 import { api, getConvexClient } from "@/lib/convex";
 import { validatePasswordStrength } from "@/lib/password";
 
@@ -50,12 +50,27 @@ export async function POST(request: Request) {
     await client.action(api.authActions.resetPassword, {
       tokenHash: resetTokenHash(email, code),
       newPassword,
+      rateLimitKey: rateLimitKey("reset-verify", email),
     });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    console.error("Reset-password error:", error);
     const message =
       error instanceof Error ? error.message : "Failed to reset password";
-    return NextResponse.json({ error: message }, { status: 400 });
+    if (/Too many/i.test(message)) {
+      return NextResponse.json(
+        { error: message },
+        { status: 429, headers: { "Retry-After": "900" } },
+      );
+    }
+    // Surface breach / expiry / policy messages; keep anything else generic.
+    const safe =
+      /data breach|expired|verify password safety|8 characters|200 characters/i.test(
+        message,
+      )
+        ? message
+        : "Failed to reset password.";
+    return NextResponse.json({ error: safe }, { status: 400 });
   }
 }

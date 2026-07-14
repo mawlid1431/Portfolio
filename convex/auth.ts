@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { checkRateLimit } from "./lib/rateLimit";
 import { getSessionByToken, requireSession } from "./lib/session";
 
@@ -61,27 +63,48 @@ export const updateProfile = mutation({
 
 const RESET_CODE_TTL_MS = 15 * 60 * 1000;
 
+/** Max wrong reset-code attempts (per email) before the code is invalidated. */
+const RESET_VERIFY_LIMIT = 10;
+const RESET_VERIFY_WINDOW_MS = 15 * 60 * 1000;
+
+async function deleteUnusedResetTokens(
+  ctx: MutationCtx,
+  adminId: Id<"admins">,
+): Promise<void> {
+  const tokens = await ctx.db
+    .query("passwordResetTokens")
+    .withIndex("by_admin", (q) => q.eq("adminId", adminId))
+    .collect();
+  for (const t of tokens) {
+    if (!t.usedAt) await ctx.db.delete("passwordResetTokens", t._id);
+  }
+}
+
 export const requestPasswordReset = mutation({
   args: {
     email: v.string(),
     tokenHash: v.string(),
     rateLimitKey: v.string(),
   },
-  returns: v.string(),
+  // Returns the admin email when one exists, else null — the caller responds
+  // generically either way so the endpoint can't be used to enumerate admins.
+  returns: v.union(v.object({ email: v.string() }), v.null()),
   handler: async (ctx, args) => {
+    // Rate-limit BEFORE the existence check so the check itself is throttled.
+    const allowed = await checkRateLimit(ctx, args.rateLimitKey, 3, 60 * 60 * 1000);
+    if (!allowed) {
+      throw new Error("Too many reset requests. Try again in an hour.");
+    }
+
     const admin = await ctx.db
       .query("admins")
       .withIndex("by_email", (q) => q.eq("email", args.email.toLowerCase()))
       .unique();
 
-    if (!admin) {
-      throw new Error("This user does not exist. Try again.");
-    }
+    if (!admin) return null;
 
-    const allowed = await checkRateLimit(ctx, args.rateLimitKey, 3, 60 * 60 * 1000);
-    if (!allowed) {
-      throw new Error("Too many reset requests. Try again in an hour.");
-    }
+    // Only one live code at a time — kill any prior unused tokens.
+    await deleteUnusedResetTokens(ctx, admin._id);
 
     const now = Date.now();
     await ctx.db.insert("passwordResetTokens", {
@@ -91,14 +114,37 @@ export const requestPasswordReset = mutation({
       createdAt: now,
     });
 
-    return admin.email;
+    return { email: admin.email };
   },
 });
 
-export const verifyPasswordResetCode = query({
-  args: { tokenHash: v.string() },
+export const verifyPasswordResetCode = mutation({
+  args: {
+    tokenHash: v.string(),
+    email: v.string(),
+    rateLimitKey: v.string(),
+  },
   returns: v.boolean(),
   handler: async (ctx, args) => {
+    // Per-email throttle (not IP-scoped) so rotating IPs can't help brute-force
+    // the 6-digit code. On lockout, invalidate the live code entirely.
+    const allowed = await checkRateLimit(
+      ctx,
+      args.rateLimitKey,
+      RESET_VERIFY_LIMIT,
+      RESET_VERIFY_WINDOW_MS,
+    );
+    if (!allowed) {
+      const admin = await ctx.db
+        .query("admins")
+        .withIndex("by_email", (q) => q.eq("email", args.email.toLowerCase()))
+        .unique();
+      if (admin) await deleteUnusedResetTokens(ctx, admin._id);
+      throw new Error(
+        "Too many attempts. Please request a new reset code.",
+      );
+    }
+
     const resetToken = await ctx.db
       .query("passwordResetTokens")
       .withIndex("by_token", (q) => q.eq("tokenHash", args.tokenHash))

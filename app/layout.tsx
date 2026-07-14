@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Anton, Manrope } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -33,11 +34,12 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
       lang="en"
@@ -46,6 +48,7 @@ export default function RootLayout({
     >
       <head>
         <script
+          nonce={nonce}
           // apply saved theme before first paint to avoid a flash
           dangerouslySetInnerHTML={{
             __html: `try{if(localStorage.getItem("theme")==="light")document.documentElement.classList.add("light")}catch(e){}`,

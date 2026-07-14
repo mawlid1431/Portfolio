@@ -50,8 +50,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, projectId });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to create project";
-    return NextResponse.json({ error: message }, { status: 400 });
+    console.error("Create-project error:", error);
+    const raw = error instanceof Error ? error.message : "";
+    // Surface validation feedback (e.g. URL scheme), hide internal errors.
+    const safe = /required|URL|http|Unauthorized/i.test(raw)
+      ? raw
+      : "Failed to create project.";
+    return NextResponse.json({ error: safe }, { status: 400 });
   }
 }

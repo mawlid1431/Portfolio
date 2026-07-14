@@ -4,8 +4,12 @@ import { mutation } from "./_generated/server";
 const RESET_CODE_TTL_MS = 15 * 60 * 1000;
 
 function assertE2eSecret(secret: string): void {
+  // Double gate: these helpers can bulk-delete data and seed reset tokens
+  // (an auth bypass), so they stay inert unless a non-prod deployment both
+  // sets a secret AND explicitly opts in. Production must set neither var.
+  const enabled = process.env.E2E_ENABLED === "true";
   const expected = process.env.E2E_TEST_SECRET;
-  if (!expected || secret !== expected) {
+  if (!enabled || !expected || secret !== expected) {
     throw new Error("Forbidden");
   }
 }

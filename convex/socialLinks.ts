@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireSession } from "./lib/session";
+import { sanitizeLinkHref } from "./lib/url";
 
 const socialValidator = v.object({
   _id: v.id("socialLinks"),
@@ -44,7 +45,7 @@ export const create = mutation({
     const now = Date.now();
     return await ctx.db.insert("socialLinks", {
       label: args.label.trim(),
-      href: args.href.trim(),
+      href: sanitizeLinkHref(args.href),
       sortOrder: args.sortOrder,
       createdAt: now,
       updatedAt: now,
@@ -65,7 +66,7 @@ export const update = mutation({
     await requireSession(ctx, args.tokenHash);
     await ctx.db.patch("socialLinks", args.socialId, {
       label: args.label.trim(),
-      href: args.href.trim(),
+      href: sanitizeLinkHref(args.href),
       sortOrder: args.sortOrder,
       updatedAt: Date.now(),
     });

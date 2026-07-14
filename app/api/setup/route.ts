@@ -1,5 +1,20 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { api, getConvexClient } from "@/lib/convex";
+
+export const runtime = "nodejs";
+
+/** Constant-time compare that never early-returns on length. */
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) {
+    // Still do a compare to avoid a length-based timing shortcut.
+    timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return timingSafeEqual(bufA, bufB);
+}
 
 /** One-time admin setup — only works when no admin exists. */
 export async function POST(request: Request) {
@@ -31,7 +46,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (setupKey !== setupKeyEnv) {
+    if (!safeEqual(setupKey, setupKeyEnv)) {
       return NextResponse.json({ error: "Invalid setup key." }, { status: 403 });
     }
 
@@ -52,7 +67,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, adminId });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Setup failed";
-    return NextResponse.json({ error: message }, { status: 400 });
+    console.error("Admin setup error:", error);
+    // Generic response — don't reveal whether an admin already exists or leak
+    // internal errors to an unauthenticated caller.
+    return NextResponse.json(
+      { error: "Setup could not be completed." },
+      { status: 400 },
+    );
   }
 }

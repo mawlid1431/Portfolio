@@ -23,6 +23,7 @@ import type * as fixSiteData from "../fixSiteData.js";
 import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_seedData from "../lib/seedData.js";
 import type * as lib_session from "../lib/session.js";
+import type * as lib_url from "../lib/url.js";
 import type * as messages from "../messages.js";
 import type * as projects from "../projects.js";
 import type * as seedCv from "../seedCv.js";
@@ -52,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   "lib/rateLimit": typeof lib_rateLimit;
   "lib/seedData": typeof lib_seedData;
   "lib/session": typeof lib_session;
+  "lib/url": typeof lib_url;
   messages: typeof messages;
   projects: typeof projects;
   seedCv: typeof seedCv;

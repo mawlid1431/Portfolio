@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resetTokenHash } from "@/lib/auth";
+import { rateLimitKey, resetTokenHash } from "@/lib/auth";
 import { api, getConvexClient } from "@/lib/convex";
 
 export const runtime = "nodejs";
@@ -25,8 +25,10 @@ export async function POST(request: Request) {
     }
 
     const client = getConvexClient();
-    const valid = await client.query(api.auth.verifyPasswordResetCode, {
+    const valid = await client.mutation(api.auth.verifyPasswordResetCode, {
       tokenHash: resetTokenHash(email, code),
+      email,
+      rateLimitKey: rateLimitKey("reset-verify", email),
     });
 
     if (!valid) {
@@ -37,7 +39,16 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (error) {
+    console.error("Verify-reset-code error:", error);
+    const message =
+      error instanceof Error ? error.message : "Failed to verify reset code.";
+    if (message.includes("Too many")) {
+      return NextResponse.json(
+        { error: message },
+        { status: 429, headers: { "Retry-After": "900" } },
+      );
+    }
     return NextResponse.json(
       { error: "Failed to verify reset code." },
       { status: 400 },

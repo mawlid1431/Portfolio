@@ -47,8 +47,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to change password";
-    return NextResponse.json({ error: message }, { status: 400 });
+    console.error("Change-password error:", error);
+    const raw = error instanceof Error ? error.message : "";
+    const safe =
+      /incorrect|must be different|data breach|verify password safety|8 characters|200 characters|Unauthorized/i.test(
+        raw,
+      )
+        ? raw
+        : "Failed to change password. Please try again.";
+    return NextResponse.json({ error: safe }, { status: 400 });
   }
 }

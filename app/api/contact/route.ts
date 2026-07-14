@@ -30,6 +30,25 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { error: "Please provide a valid email address." },
+        { status: 400 },
+      );
+    }
+
+    if (
+      name.length > 120 ||
+      email.length > 254 ||
+      budget.length > 60 ||
+      message.length > 5000
+    ) {
+      return NextResponse.json(
+        { error: "One or more fields are too long." },
+        { status: 400 },
+      );
+    }
+
     const ip = getClientIp(request);
     const client = getConvexClient();
 
@@ -72,8 +91,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Contact form error:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to send message.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const raw = error instanceof Error ? error.message : "";
+    if (/Too many/i.test(raw)) {
+      return NextResponse.json(
+        { error: raw },
+        { status: 429, headers: { "Retry-After": "3600" } },
+      );
+    }
+    // Surface only safe validation messages; hide internal errors.
+    const safe = /valid email|required|too long|exceed/i.test(raw)
+      ? raw
+      : "Failed to send message. Please try again.";
+    return NextResponse.json({ error: safe }, { status: 400 });
   }
 }

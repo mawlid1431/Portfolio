@@ -40,6 +40,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ ok: true, loggedOut: true });
     }
 
-    return NextResponse.json({ error: message }, { status: 400 });
+    console.error("Revoke-session error:", error);
+    return NextResponse.json(
+      { error: "Failed to revoke session." },
+      { status: 400 },
+    );
   }
 }

@@ -33,6 +33,11 @@ export async function POST(request: Request) {
     }
 
     const publicId = body.publicId?.trim() || undefined;
+    // A crafted public_id can contain `/` to escape the signed folder, or `..`
+    // for traversal. Restrict to a safe single path segment.
+    if (publicId && !/^[a-z0-9_-]{1,100}$/i.test(publicId)) {
+      return NextResponse.json({ error: "Invalid public id" }, { status: 400 });
+    }
     const timestamp = Math.round(Date.now() / 1000);
 
     const paramsToSign: Record<string, string | number | boolean> = {

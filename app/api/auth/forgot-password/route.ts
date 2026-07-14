@@ -27,35 +27,41 @@ export async function POST(request: Request) {
     const ip = getClientIp(request);
 
     const client = getConvexClient();
-    const adminEmail = await client.mutation(api.auth.requestPasswordReset, {
+    const result = await client.mutation(api.auth.requestPasswordReset, {
       email,
       tokenHash,
       rateLimitKey: rateLimitKey("forgot", `${ip}:${email}`),
     });
 
-    const template = passwordResetCodeEmail({ code });
-    await sendEmail({
-      to: adminEmail,
-      subject: template.subject,
-      text: template.text,
-      html: template.html,
-    });
+    // Send the code only when the account exists, but always return the same
+    // generic 200 response so the endpoint can't reveal which emails are admins.
+    if (result?.email) {
+      const template = passwordResetCodeEmail({ code });
+      await sendEmail({
+        to: result.email,
+        subject: template.subject,
+        text: template.text,
+        html: template.html,
+      });
+    }
 
     return NextResponse.json({
       ok: true,
-      maskedEmail: maskEmail(adminEmail),
+      maskedEmail: maskEmail(result?.email ?? email),
     });
   } catch (error) {
+    console.error("Forgot-password error:", error);
     const message =
       error instanceof Error ? error.message : "Failed to send reset email";
-
-    if (message.includes("does not exist")) {
-      return NextResponse.json({ error: message }, { status: 404 });
+    if (message.includes("Too many")) {
+      return NextResponse.json(
+        { error: message },
+        { status: 429, headers: { "Retry-After": "3600" } },
+      );
     }
-
-    const safe = message.includes("Too many")
-      ? message
-      : "Failed to send reset email.";
-    return NextResponse.json({ error: safe }, { status: 400 });
+    return NextResponse.json(
+      { error: "Failed to send reset email." },
+      { status: 400 },
+    );
   }
 }

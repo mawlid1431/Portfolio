@@ -5,7 +5,12 @@ const LOCAL_ORIGIN = "http://localhost:3000";
 
 /** Origins allowed to call /api/* cross-origin (e.g. www vs apex, Vercel previews). */
 export function getAllowedOrigins(): string[] {
-  const origins = new Set<string>([LOCAL_ORIGIN]);
+  const origins = new Set<string>();
+  // Only trust localhost outside production — otherwise malware on a victim's
+  // machine listening on :3000 could make credentialed cross-origin calls.
+  if (process.env.NODE_ENV !== "production") {
+    origins.add(LOCAL_ORIGIN);
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
   if (siteUrl) {

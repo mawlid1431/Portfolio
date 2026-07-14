@@ -30,7 +30,8 @@ export async function listCloudinaryAssets(
     type: "upload",
     resource_type: resourceType,
     // Only this project's folder — the account also holds other sites' media.
-    prefix: "devmalitos",
+    // Trailing slash so a sibling folder like `devmalitos-other` can't match.
+    prefix: "devmalitos/",
     max_results: maxResults,
     direction: "desc",
   })) as {

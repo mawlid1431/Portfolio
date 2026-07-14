@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { requireSession } from "./lib/session";
+import { sanitizeHttpUrl } from "./lib/url";
 
 export const projectValidator = v.object({
   _id: v.id("projects"),
@@ -183,7 +184,7 @@ export const create = mutation({
       year: args.year,
       imagePath: args.imagePath.trim(),
       images: args.images?.map((i) => i.trim()).filter(Boolean).slice(0, 4),
-      liveUrl: args.liveUrl?.trim() || undefined,
+      liveUrl: sanitizeHttpUrl(args.liveUrl),
       featured: false,
       status: "live",
       createdAt: now,
@@ -223,7 +224,7 @@ export const update = mutation({
       year: args.year,
       imagePath: args.imagePath.trim(),
       images: args.images?.map((i) => i.trim()).filter(Boolean).slice(0, 4),
-      liveUrl: args.liveUrl?.trim() || undefined,
+      liveUrl: sanitizeHttpUrl(args.liveUrl),
       updatedAt: Date.now(),
     });
     return null;

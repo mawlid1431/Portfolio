@@ -26,6 +26,8 @@ export const list = query({
   },
 });
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export const create = mutation({
   args: {
     name: v.string(),
@@ -37,6 +39,22 @@ export const create = mutation({
   },
   returns: v.id("contactMessages"),
   handler: async (ctx, args) => {
+    // Validate + bound sizes server-side (defense in depth — the route also
+    // checks) to prevent oversized DB writes / email payloads and bad data.
+    const name = args.name.trim();
+    const email = args.email.trim().toLowerCase();
+    const budget = args.budget.trim();
+    const message = args.message.trim();
+    if (!name || !email || !message) {
+      throw new Error("Name, email, and message are required.");
+    }
+    if (name.length > 120 || email.length > 254 || budget.length > 60 || message.length > 5000) {
+      throw new Error("One or more fields exceed the allowed length.");
+    }
+    if (!EMAIL_RE.test(email)) {
+      throw new Error("Please provide a valid email address.");
+    }
+
     const allowed = await checkRateLimit(ctx, args.rateLimitKey, 5, 60 * 60 * 1000);
     if (!allowed) {
       throw new Error("Too many messages sent. Please try again in an hour.");
@@ -53,10 +71,10 @@ export const create = mutation({
 
     const now = Date.now();
     const messageId = await ctx.db.insert("contactMessages", {
-      name: args.name.trim(),
-      email: args.email.trim().toLowerCase(),
-      budget: args.budget.trim(),
-      message: args.message.trim(),
+      name,
+      email,
+      budget,
+      message,
       read: false,
       createdAt: now,
     });

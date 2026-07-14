@@ -1,6 +1,10 @@
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
 
+/** Idle timeout: a session unused for this long is treated as expired even if
+ * its absolute expiry hasn't passed. */
+const IDLE_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 export async function getSessionByToken(
   ctx: QueryCtx | MutationCtx,
   tokenHash: string,
@@ -10,7 +14,12 @@ export async function getSessionByToken(
     .withIndex("by_token", (q) => q.eq("tokenHash", tokenHash))
     .unique();
 
-  if (!session || session.expiresAt < Date.now()) {
+  const now = Date.now();
+  if (
+    !session ||
+    session.expiresAt < now ||
+    now - session.lastActiveAt > IDLE_TIMEOUT_MS
+  ) {
     return null;
   }
 

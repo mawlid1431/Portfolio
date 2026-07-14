@@ -3,7 +3,21 @@ import { internalMutation, internalQuery } from "./_generated/server";
 import { checkRateLimit } from "./lib/rateLimit";
 import { parseDeviceLabel } from "./lib/session";
 
-const SESSION_DAYS = 30;
+const SESSION_DAYS = 14;
+
+/**
+ * Length-independent constant-time string comparison. The Convex default
+ * runtime has no `crypto.timingSafeEqual`, so accumulate differences over the
+ * longer of the two lengths and never early-return.
+ */
+function timingSafeEqualString(a: string, b: string): boolean {
+  const len = Math.max(a.length, b.length);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < len; i++) {
+    diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return diff === 0;
+}
 
 export const checkRateLimitMutation = internalMutation({
   args: {
@@ -91,6 +105,27 @@ export const updatePassword = internalMutation({
   },
 });
 
+export const deleteOtherSessions = internalMutation({
+  args: {
+    adminId: v.id("admins"),
+    keepTokenHash: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const sessions = await ctx.db
+      .query("sessions")
+      .withIndex("by_admin", (q) => q.eq("adminId", args.adminId))
+      .collect();
+
+    for (const session of sessions) {
+      if (session.tokenHash !== args.keepTokenHash) {
+        await ctx.db.delete("sessions", session._id);
+      }
+    }
+    return null;
+  },
+});
+
 export const completePasswordReset = internalMutation({
   args: {
     tokenHash: v.string(),
@@ -142,7 +177,7 @@ export const createAdmin = internalMutation({
     if (!setupKeyEnv) {
       throw new Error("Admin setup is not configured");
     }
-    if (args.setupKey !== setupKeyEnv) {
+    if (!timingSafeEqualString(args.setupKey, setupKeyEnv)) {
       throw new Error("Invalid setup key");
     }
 

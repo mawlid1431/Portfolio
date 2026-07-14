@@ -48,3 +48,6 @@ dev.log
 next-env.d.ts
 
 .vercel
+
+# crash artifacts
+*.stackdump
