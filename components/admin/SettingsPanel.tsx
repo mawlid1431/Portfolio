@@ -1,15 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import PasswordInput from "@/components/PasswordInput";
 import {
   btnDanger,
   btnGhost,
   btnPrimary,
   cardClass,
+  inputClass,
+  labelClass,
   formatDate,
+  useAdminSession,
 } from "@/lib/admin-hooks";
 
 type SessionRow = {
@@ -23,6 +27,13 @@ type SessionRow = {
 
 export default function SettingsPanel() {
   const router = useRouter();
+  const { admin, tokenHash, refresh } = useAdminSession();
+  const updateProfile = useMutation(api.auth.updateProfile);
+  const [profileName, setProfileName] = useState("");
+  const [syncedAdminName, setSyncedAdminName] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [passwordError, setPasswordError] = useState("");
@@ -55,6 +66,31 @@ export default function SettingsPanel() {
     });
     task();
   }, [loadSessions]);
+
+  // Sync the input with the loaded session name (render-time adjustment).
+  if (admin && admin.name !== syncedAdminName) {
+    setSyncedAdminName(admin.name);
+    setProfileName(admin.name);
+  }
+
+  const onSaveProfile = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!tokenHash) return;
+    setProfileError("");
+    setProfileSuccess("");
+    setProfileLoading(true);
+    try {
+      await updateProfile({ tokenHash, name: profileName });
+      setProfileSuccess("Profile updated.");
+      void refresh();
+    } catch (err) {
+      setProfileError(
+        err instanceof Error ? err.message : "Failed to update profile",
+      );
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const onChangePassword = async (e: FormEvent) => {
     e.preventDefault();
@@ -115,57 +151,80 @@ export default function SettingsPanel() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className={`${cardClass} flex flex-col gap-4`}>
-        <h2 className="text-xs uppercase tracking-[0.3em] text-emerald-bright">
-          Email templates
+      <form onSubmit={onSaveProfile} className={`${cardClass} flex flex-col gap-4`}>
+        <h2 className="text-xs uppercase tracking-[0.3em] text-secondary">
+          Profile
         </h2>
-        <p className="text-sm text-cream-dim">
-          Preview transactional emails and send a test to your inbox.
+        <p className="text-sm text-[var(--admin-text-dim)]">
+          Your name is shown in the dashboard greeting.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <Link href="/unknown/dashboard/email-preview" className={btnPrimary}>
-            Open email preview
-          </Link>
-          {process.env.NODE_ENV === "development" && (
-            <Link href="/dev/email-preview" className={btnGhost}>
-              Dev preview (no login)
-            </Link>
-          )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className={labelClass} htmlFor="profile-name">
+              Name
+            </label>
+            <input
+              id="profile-name"
+              className={inputClass}
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Email</label>
+            <input className={inputClass} value={admin?.email ?? ""} disabled />
+          </div>
         </div>
-      </div>
+        {profileError && (
+          <p className="text-xs text-red-400" role="alert">
+            {profileError}
+          </p>
+        )}
+        {profileSuccess && (
+          <p className="text-xs text-secondary" role="status">
+            {profileSuccess}
+          </p>
+        )}
+        <button type="submit" className={`${btnPrimary} w-fit`} disabled={profileLoading}>
+          {profileLoading ? "Saving…" : "Save profile"}
+        </button>
+      </form>
 
       <form onSubmit={onChangePassword} className={`${cardClass} flex flex-col gap-4`}>
-        <h2 className="text-xs uppercase tracking-[0.3em] text-emerald-bright">
+        <h2 className="text-xs uppercase tracking-[0.3em] text-secondary">
           Change password
         </h2>
         <p className="text-sm text-cream-dim">
           New passwords are checked against known data breaches (Have I Been Pwned).
         </p>
 
-        <PasswordInput
-          id="current-password"
-          name="currentPassword"
-          label="Current password"
-          autoComplete="current-password"
-          value={currentPassword}
-          onChange={setCurrentPassword}
-        />
-        <PasswordInput
-          id="new-password"
-          name="newPassword"
-          label="New password"
-          autoComplete="new-password"
-          value={newPassword}
-          onChange={setNewPassword}
-        />
-        <PasswordInput
-          id="confirm-password"
-          name="confirmPassword"
-          label="Confirm new password"
-          autoComplete="new-password"
-          value={confirmPassword}
-          onChange={setConfirmPassword}
-        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PasswordInput
+            id="current-password"
+            name="currentPassword"
+            label="Current password"
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={setCurrentPassword}
+          />
+          <PasswordInput
+            id="new-password"
+            name="newPassword"
+            label="New password"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={setNewPassword}
+          />
+          <PasswordInput
+            id="confirm-password"
+            name="confirmPassword"
+            label="Confirm new password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+          />
+        </div>
 
         {passwordError && (
           <p className="text-xs text-red-400" role="alert">
@@ -173,7 +232,7 @@ export default function SettingsPanel() {
           </p>
         )}
         {passwordSuccess && (
-          <p className="text-xs text-emerald-bright" role="status">
+          <p className="text-xs text-secondary" role="status">
             {passwordSuccess}
           </p>
         )}
@@ -184,7 +243,7 @@ export default function SettingsPanel() {
       </form>
 
       <div className={cardClass}>
-        <h2 className="text-xs uppercase tracking-[0.3em] text-emerald-bright">
+        <h2 className="text-xs uppercase tracking-[0.3em] text-secondary">
           Active sessions
         </h2>
         <p className="mt-2 text-sm text-cream-dim">
@@ -199,13 +258,13 @@ export default function SettingsPanel() {
             {sessions.map((s) => (
               <li
                 key={s._id}
-                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cream/10 bg-ink/40 p-4"
+                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--input-bg)] p-4"
               >
                 <div>
                   <p className="font-medium">
                     {s.deviceLabel}
                     {s.isCurrent && (
-                      <span className="ml-2 text-xs text-emerald-bright">
+                      <span className="ml-2 text-xs text-secondary">
                         (this device)
                       </span>
                     )}

@@ -43,6 +43,22 @@ export const me = query({
   },
 });
 
+export const updateProfile = mutation({
+  args: { tokenHash: v.string(), name: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const { admin } = await requireSession(ctx, args.tokenHash);
+    const name = args.name.trim();
+    if (!name) throw new Error("Name is required");
+    if (name.length > 80) throw new Error("Name is too long");
+    await ctx.db.patch("admins", admin._id, {
+      name,
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
 const RESET_CODE_TTL_MS = 15 * 60 * 1000;
 
 export const requestPasswordReset = mutation({

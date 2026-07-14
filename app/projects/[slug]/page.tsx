@@ -35,6 +35,10 @@ export default async function ProjectDetailPage({ params }: Props) {
   if (!data) notFound();
 
   const { project, nextSlug, prevSlug } = data;
+  const gallery = [
+    ...new Set((project.images?.length ? project.images : [project.imagePath]).filter(Boolean)),
+  ];
+  const extraImages = gallery.slice(1);
 
   return (
     <main className="pt-28">
@@ -102,6 +106,23 @@ export default async function ProjectDetailPage({ params }: Props) {
                 Start a similar project
               </GlassButton>
             </div>
+
+            {extraImages.length > 0 && (
+              <div className="mt-12 grid gap-4 sm:grid-cols-2">
+                {extraImages.map((img) => (
+                  <div
+                    key={img}
+                    className="overflow-hidden rounded-2xl border border-emerald-glow/20"
+                  >
+                    <Portrait
+                      src={projectImageUrl(img, 900)}
+                      alt={project.title}
+                      className="aspect-[16/10] w-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </Reveal>
 

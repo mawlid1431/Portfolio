@@ -20,7 +20,7 @@ type Draft = {
   title: string;
   pitch: string;
   year: number;
-  imagePath: string;
+  images: string[];
   liveUrl: string;
 };
 
@@ -30,13 +30,20 @@ type ProjectItem = NonNullable<
 
 type ModalMode = "closed" | "create" | "edit" | "view";
 
+const MAX_IMAGES = 4;
+
 const empty: Draft = {
   title: "",
   pitch: "",
   year: new Date().getFullYear(),
-  imagePath: "",
+  images: [],
   liveUrl: "",
 };
+
+function projectImages(p: { imagePath: string; images?: string[] }): string[] {
+  const all = p.images?.length ? p.images : [p.imagePath];
+  return [...new Set(all.filter(Boolean))].slice(0, MAX_IMAGES);
+}
 
 export default function ProjectsPanel() {
   const tokenHash = useAdminTokenHash();
@@ -79,7 +86,7 @@ export default function ProjectsPanel() {
       title: project.title,
       pitch: project.pitch,
       year: project.year,
-      imagePath: project.imagePath,
+      images: projectImages(project),
       liveUrl: project.liveUrl ?? "",
     });
     setModalMode("edit");
@@ -107,8 +114,8 @@ export default function ProjectsPanel() {
     if (!tokenHash) return;
     setError("");
 
-    if (!draft.imagePath.trim()) {
-      setError("Please upload a project image first.");
+    if (draft.images.length === 0) {
+      setError("Please upload at least one project image.");
       return;
     }
 
@@ -117,7 +124,8 @@ export default function ProjectsPanel() {
         title: draft.title,
         pitch: draft.pitch,
         year: draft.year,
-        imagePath: draft.imagePath.trim(),
+        imagePath: draft.images[0]!,
+        images: draft.images,
         liveUrl: draft.liveUrl.trim() || undefined,
       };
 
@@ -201,13 +209,22 @@ export default function ProjectsPanel() {
       >
         {isReadOnly && viewItem ? (
           <div className="space-y-4">
-            <div className="overflow-hidden rounded-xl border border-[var(--border-subtle)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={cloudinaryUrl(viewItem.imagePath, { width: 800 })}
-                alt={viewItem.title}
-                className="h-44 w-full object-cover"
-              />
+            <div
+              className={`grid gap-3 ${projectImages(viewItem).length > 1 ? "grid-cols-2" : "grid-cols-1"}`}
+            >
+              {projectImages(viewItem).map((img) => (
+                <div
+                  key={img}
+                  className="overflow-hidden rounded-xl border border-[var(--border-subtle)]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={cloudinaryUrl(img, { width: 800 })}
+                    alt={viewItem.title}
+                    className="h-44 w-full object-cover"
+                  />
+                </div>
+              ))}
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -267,15 +284,65 @@ export default function ProjectsPanel() {
             className="flex flex-col gap-4"
           >
             <div>
-              <label className={labelClass}>Project image</label>
-              <CloudinaryUpload
-                folder="devmalitos/projects"
-                value={draft.imagePath}
-                label="Upload project image"
-                onUploaded={(publicId) =>
-                  setDraft({ ...draft, imagePath: publicId })
-                }
-              />
+              <label className={labelClass}>
+                Project images ({draft.images.length}/{MAX_IMAGES} — first is the
+                cover)
+              </label>
+              {draft.images.length > 0 && (
+                <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {draft.images.map((img, i) => (
+                    <div
+                      key={img}
+                      className="group relative overflow-hidden rounded-lg border border-[var(--border-subtle)]"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={cloudinaryUrl(img, { width: 300 })}
+                        alt={`Project image ${i + 1}`}
+                        className="aspect-square w-full object-cover"
+                      />
+                      {i === 0 && (
+                        <span className="absolute left-1.5 top-1.5 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-black">
+                          Cover
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        aria-label="Remove image"
+                        onClick={() =>
+                          setDraft({
+                            ...draft,
+                            images: draft.images.filter((x) => x !== img),
+                          })
+                        }
+                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-xs text-white transition-colors hover:bg-red-500"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {draft.images.length < MAX_IMAGES && (
+                <CloudinaryUpload
+                  key={draft.images.length}
+                  folder="devmalitos/projects"
+                  label={
+                    draft.images.length === 0
+                      ? "Upload project image"
+                      : "Add another image"
+                  }
+                  onUploaded={(publicId) =>
+                    setDraft((d) => ({
+                      ...d,
+                      images: [...new Set([...d.images, publicId])].slice(
+                        0,
+                        MAX_IMAGES,
+                      ),
+                    }))
+                  }
+                />
+              )}
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div>

@@ -12,6 +12,7 @@ export const projectValidator = v.object({
   tag: v.optional(v.string()),
   year: v.number(),
   imagePath: v.string(),
+  images: v.optional(v.array(v.string())),
   liveUrl: v.optional(v.string()),
   featured: v.boolean(),
   status: v.union(v.literal("live"), v.literal("draft")),
@@ -28,6 +29,7 @@ export type ProjectDoc = {
   tag?: string;
   year: number;
   imagePath: string;
+  images?: string[];
   liveUrl?: string;
   featured: boolean;
   status: "live" | "draft";
@@ -62,6 +64,7 @@ function withDefaults(project: {
   tag?: string;
   year?: number;
   imagePath?: string;
+  images?: string[];
   liveUrl?: string;
   featured: boolean;
   status: "live" | "draft";
@@ -140,6 +143,7 @@ export const create = mutation({
     pitch: v.string(),
     year: v.number(),
     imagePath: v.string(),
+    images: v.optional(v.array(v.string())),
     liveUrl: v.optional(v.string()),
     idempotencyKey: v.string(),
   },
@@ -178,6 +182,7 @@ export const create = mutation({
       pitch: args.pitch.trim(),
       year: args.year,
       imagePath: args.imagePath.trim(),
+      images: args.images?.map((i) => i.trim()).filter(Boolean).slice(0, 4),
       liveUrl: args.liveUrl?.trim() || undefined,
       featured: false,
       status: "live",
@@ -204,6 +209,7 @@ export const update = mutation({
     pitch: v.string(),
     year: v.number(),
     imagePath: v.string(),
+    images: v.optional(v.array(v.string())),
     liveUrl: v.optional(v.string()),
   },
   returns: v.null(),
@@ -216,6 +222,7 @@ export const update = mutation({
       pitch: args.pitch.trim(),
       year: args.year,
       imagePath: args.imagePath.trim(),
+      images: args.images?.map((i) => i.trim()).filter(Boolean).slice(0, 4),
       liveUrl: args.liveUrl?.trim() || undefined,
       updatedAt: Date.now(),
     });

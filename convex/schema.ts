@@ -30,6 +30,8 @@ export default defineSchema({
     tag: v.optional(v.string()),
     year: v.number(),
     imagePath: v.string(),
+    /** Additional showcase images (max 4 total including imagePath). */
+    images: v.optional(v.array(v.string())),
     liveUrl: v.optional(v.string()),
     featured: v.boolean(),
     status: v.union(v.literal("live"), v.literal("draft")),

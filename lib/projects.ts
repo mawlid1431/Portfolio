@@ -7,6 +7,7 @@ export type PublicProject = {
   tag?: string;
   year: number;
   imagePath: string;
+  images?: string[];
   liveUrl?: string;
   featured?: boolean;
 };

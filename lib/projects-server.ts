@@ -18,6 +18,7 @@ export async function fetchPublicProjects(): Promise<PublicProject[]> {
       tag: p.tag,
       year: p.year,
       imagePath: p.imagePath || `devmalitos/projects/${p.slug}`,
+      images: p.images,
       liveUrl: p.liveUrl,
       featured: p.featured,
     }));
@@ -43,6 +44,7 @@ export async function fetchProjectBySlug(
         imagePath:
           result.project.imagePath ||
           `devmalitos/projects/${result.project.slug}`,
+        images: result.project.images,
         liveUrl: result.project.liveUrl,
         featured: result.project.featured,
       },
