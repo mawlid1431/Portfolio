@@ -122,7 +122,7 @@ export default function Navbar() {
       )}
       <div
         id="mobile-nav"
-        className={`fixed inset-x-0 top-0 z-50 max-h-[100dvh] overflow-y-auto bg-ink/98 pb-safe pt-20 transition-transform duration-300 md:hidden ${
+        className={`fixed inset-x-0 top-0 z-[45] max-h-[100dvh] overflow-y-auto bg-ink/98 pb-safe pt-20 transition-transform duration-300 md:hidden ${
           open ? "translate-y-0" : "-translate-y-full pointer-events-none"
         }`}
       >
