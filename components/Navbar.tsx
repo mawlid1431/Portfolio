@@ -51,7 +51,7 @@ export default function Navbar() {
         className={`fixed inset-x-0 top-0 z-50 pt-safe transition-all duration-500 ${
           scrolled
             ? "border-b border-emerald-glow/20 bg-ink/85 py-3 backdrop-blur-md"
-            : "bg-transparent py-5"
+            : "bg-transparent py-5 md:pt-8"
         }`}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
