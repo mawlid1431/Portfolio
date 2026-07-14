@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 
 function shouldUseSmoothScroll(): boolean {
@@ -12,8 +13,13 @@ function shouldUseSmoothScroll(): boolean {
 }
 
 export default function SmoothScroll({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  // The admin dashboard scrolls inside nested containers; Lenis would
+  // swallow the mouse wheel there, so it stays native on /unknown routes.
+  const isAdminRoute = pathname?.startsWith("/unknown") ?? false;
+
   useEffect(() => {
-    if (!shouldUseSmoothScroll()) return;
+    if (isAdminRoute || !shouldUseSmoothScroll()) return;
 
     const lenis = new Lenis({
       lerp: 0.09,
@@ -32,7 +38,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
       cancelAnimationFrame(rafId);
       lenis.destroy();
     };
-  }, []);
+  }, [isAdminRoute]);
 
   return <>{children}</>;
 }

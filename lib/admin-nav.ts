@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import {
+  IconAcademicCap,
   IconSquares,
   IconFolder,
   IconPhoto,
@@ -16,6 +17,7 @@ export type AdminTab =
   | "projects"
   | "images"
   | "experience"
+  | "education"
   | "messages"
   | "faq"
   | "socials"
@@ -58,6 +60,13 @@ export const ADMIN_NAV: AdminNavItem[] = [
     description: "Work history",
     section: "Content",
     icon: IconBriefcase,
+  },
+  {
+    key: "education",
+    label: "Education & Skills",
+    description: "Education & tech stack",
+    section: "Content",
+    icon: IconAcademicCap,
   },
   {
     key: "faq",

@@ -3,12 +3,12 @@ import Footer from "@/components/Footer";
 import GlassButton from "@/components/GlassButton";
 import Reveal from "@/components/Reveal";
 import ScrollZoomReveal from "@/components/ScrollZoomReveal";
+import { HIGHLIGHTS } from "@/lib/data";
 import {
-  EDUCATION,
-  HIGHLIGHTS,
-  TECH_STACK,
-} from "@/lib/data";
-import { fetchPublicExperiences } from "@/lib/cms-server";
+  fetchPublicEducation,
+  fetchPublicExperiences,
+  fetchPublicSkills,
+} from "@/lib/cms-server";
 import { fetchSiteImageMap, resolveSiteImage, resolveSiteVideo } from "@/lib/images-server";
 import { glassButtonClasses } from "@/lib/glass-button-classes";
 import { cn } from "@/lib/cn";
@@ -20,9 +20,11 @@ export const metadata: Metadata = {
 };
 
 export default async function AboutPage() {
-  const [images, experience] = await Promise.all([
+  const [images, experience, education, techStack] = await Promise.all([
     fetchSiteImageMap(),
     fetchPublicExperiences(),
+    fetchPublicEducation(),
+    fetchPublicSkills(),
   ]);
   const flagSrc = resolveSiteImage(images, "flag", 1000);
   const graduationSrc = resolveSiteImage(images, "graduation", 1000);
@@ -183,7 +185,7 @@ export default async function AboutPage() {
           </Reveal>
 
           <div className="mt-14 grid gap-6 md:max-w-2xl">
-            {EDUCATION.map((ed, i) => (
+            {education.map((ed, i) => (
               <Reveal key={ed.title} delay={i * 0.06}>
                 <div className="rounded-2xl border border-cream/10 bg-ink-soft/70 p-6 backdrop-blur">
                   <div className="flex items-start justify-between gap-4">
@@ -216,7 +218,7 @@ export default async function AboutPage() {
           </Reveal>
 
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {TECH_STACK.map((g, i) => (
+            {techStack.map((g, i) => (
               <Reveal key={g.group} delay={i * 0.08}>
                 <div className="h-full rounded-2xl border border-cream/10 bg-ink-soft/70 p-6">
                   <h3 className="text-xs uppercase tracking-[0.3em] text-emerald-bright">

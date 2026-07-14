@@ -57,6 +57,24 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_sort", ["sortOrder"]),
 
+  educations: defineTable({
+    title: v.string(),
+    org: v.string(),
+    period: v.string(),
+    text: v.string(),
+    sortOrder: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_sort", ["sortOrder"]),
+
+  skillGroups: defineTable({
+    group: v.string(),
+    items: v.array(v.string()),
+    sortOrder: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_sort", ["sortOrder"]),
+
   faqs: defineTable({
     question: v.string(),
     answer: v.string(),

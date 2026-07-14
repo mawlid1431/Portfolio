@@ -9,6 +9,7 @@ import OverviewPanel from "@/components/admin/OverviewPanel";
 import ProjectsPanel from "@/components/admin/ProjectsPanel";
 import ImagesPanel from "@/components/admin/ImagesPanel";
 import ExperiencePanel from "@/components/admin/ExperiencePanel";
+import EducationSkillsPanel from "@/components/admin/EducationSkillsPanel";
 import MessagesPanel from "@/components/admin/MessagesPanel";
 import FaqPanel from "@/components/admin/FaqPanel";
 import SocialsPanel from "@/components/admin/SocialsPanel";
@@ -71,6 +72,7 @@ export default function AdminDashboard() {
           {tab === "projects" && <ProjectsPanel />}
           {tab === "images" && <ImagesPanel />}
           {tab === "experience" && <ExperiencePanel />}
+          {tab === "education" && <EducationSkillsPanel />}
           {tab === "messages" && <MessagesPanel />}
           {tab === "faq" && <FaqPanel />}
           {tab === "socials" && <SocialsPanel />}

@@ -7,24 +7,48 @@ import { cloudinaryUrl, cloudinaryVideoUrl } from "@/lib/cloudinary";
 import AdminModal from "./AdminModal";
 import AdminButton from "./AdminButton";
 import AdminDeleteConfirmModal from "./AdminDeleteConfirmModal";
-import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
+import AdminRowActions from "./AdminRowActions";
 import CloudinaryUpload from "./CloudinaryUpload";
 import { inputClass, labelClass, useAdminTokenHash } from "@/lib/admin-hooks";
 
-const SECTION_PRESETS = [
-  { key: "hero", label: "Hero (home)" },
-  { key: "working", label: "Working section" },
-  { key: "portrait", label: "Portrait / work" },
-  { key: "flag", label: "About — flag" },
-  { key: "graduation", label: "About — graduation" },
-  { key: "about-showreel", label: "About — showreel video" },
+const SECTIONS = [
+  {
+    key: "hero",
+    label: "Hero section",
+    description: "Main image on the home page hero.",
+  },
+  {
+    key: "working",
+    label: "Working section",
+    description: "Image shown in the working/process section.",
+  },
+  {
+    key: "portrait",
+    label: "Portrait / work",
+    description: "Portrait image used across the work pages.",
+  },
+  {
+    key: "flag",
+    label: "About — flag",
+    description: "Flag image on the about page.",
+  },
+  {
+    key: "graduation",
+    label: "About — graduation",
+    description: "Graduation image on the about page.",
+  },
+  {
+    key: "about-showreel",
+    label: "About — showreel video",
+    description: "Showreel video (MP4) on the about page.",
+  },
 ];
 
 type ImageItem = NonNullable<
   ReturnType<typeof useQuery<typeof api.siteImages.list>>
 >[number];
 
-type ModalMode = "closed" | "create" | "edit" | "view";
+type ModalMode = "closed" | "form" | "view";
 
 function ViewField({ label, value }: { label: string; value: string }) {
   return (
@@ -34,6 +58,32 @@ function ViewField({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-1 break-all text-sm text-[var(--admin-text)]">{value}</p>
     </div>
+  );
+}
+
+function MediaPreview({
+  path,
+  isVideo,
+  alt,
+  className,
+}: {
+  path: string;
+  isVideo: boolean;
+  alt: string;
+  className: string;
+}) {
+  return isVideo ? (
+    <video
+      src={cloudinaryVideoUrl(path)}
+      muted
+      playsInline
+      preload="metadata"
+      controls={false}
+      className={className}
+    />
+  ) : (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={cloudinaryUrl(path, { width: 800 })} alt={alt} className={className} />
   );
 }
 
@@ -47,7 +97,7 @@ export default function ImagesPanel() {
   const remove = useMutation(api.siteImages.remove);
 
   const [key, setKey] = useState("hero");
-  const [label, setLabel] = useState("Hero (home)");
+  const [label, setLabel] = useState("Hero section");
   const [cloudinaryPath, setCloudinaryPath] = useState("devmalitos/hero");
   const [error, setError] = useState("");
   const [modalMode, setModalMode] = useState<ModalMode>("closed");
@@ -63,27 +113,23 @@ export default function ImagesPanel() {
     setError("");
   };
 
-  const onPreset = (presetKey: string) => {
-    const preset = SECTION_PRESETS.find((p) => p.key === presetKey);
-    if (!preset) return;
-    setKey(preset.key);
-    setLabel(preset.label);
-    const existing = images?.find((i) => i.key === preset.key);
-    setCloudinaryPath(existing?.cloudinaryPath ?? `devmalitos/${preset.key}`);
-  };
-
-  const openCreate = () => {
+  const openForSection = (section: (typeof SECTIONS)[number]) => {
+    const existing = images?.find((i) => i.key === section.key);
+    setKey(section.key);
+    setLabel(existing?.label ?? section.label);
+    setCloudinaryPath(
+      existing?.cloudinaryPath ?? `devmalitos/${section.key}`,
+    );
     setViewItem(null);
-    onPreset(SECTION_PRESETS[0]!.key);
-    setModalMode("create");
+    setModalMode("form");
   };
 
   const openEdit = (img: ImageItem) => {
-    setViewItem(null);
     setKey(img.key);
     setLabel(img.label);
     setCloudinaryPath(img.cloudinaryPath);
-    setModalMode("edit");
+    setViewItem(null);
+    setModalMode("form");
   };
 
   const openView = (img: ImageItem) => {
@@ -121,30 +167,151 @@ export default function ImagesPanel() {
     );
   }
 
-  const isFormOpen = modalMode === "create" || modalMode === "edit";
-  const isPresetKey = SECTION_PRESETS.some((p) => p.key === key);
+  const sectionKeys = new Set(SECTIONS.map((s) => s.key));
+  const otherImages = images.filter((i) => !sectionKeys.has(i.key));
+  const sectionLabel =
+    SECTIONS.find((s) => s.key === (viewItem?.key ?? key))?.label ?? "Custom";
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-[var(--admin-text-dim)]">
-          Upload images to Cloudinary. Paths are saved in Convex and appear on
-          the live site after save.
-        </p>
-        <AdminButton variant="primary" onClick={openCreate}>
-          Add image
-        </AdminButton>
-      </div>
+    <div className="space-y-6">
+      <p className="text-sm text-[var(--admin-text-dim)]">
+        Each site section has its own media slot. Upload to Cloudinary and it
+        appears on the live site after save.
+      </p>
+
+      {SECTIONS.map((section) => {
+        const img = images.find((i) => i.key === section.key);
+        const isVideo = section.key === "about-showreel";
+        return (
+          <section
+            key={section.key}
+            className="card-surface card-surface-interactive overflow-hidden"
+          >
+            <div className="flex flex-col gap-3 border-b border-[var(--border-subtle)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+              <div className="min-w-0">
+                <h2 className="font-semibold text-[var(--admin-text)]">
+                  {section.label}
+                </h2>
+                <p className="mt-0.5 text-xs text-[var(--admin-text-dim)]">
+                  {section.description}
+                </p>
+              </div>
+              <AdminButton
+                variant="primary"
+                className="!px-3 !py-1.5 !text-xs"
+                onClick={() => openForSection(section)}
+              >
+                {img
+                  ? isVideo
+                    ? "Replace video"
+                    : "Replace image"
+                  : isVideo
+                    ? "Add video"
+                    : "Add image"}
+              </AdminButton>
+            </div>
+
+            <div className="p-4 sm:p-5">
+              {img ? (
+                <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
+                  <article className="card-surface card-surface-interactive flex h-full flex-col p-4">
+                    <button
+                      type="button"
+                      onClick={() => openView(img)}
+                      className="mb-4 block w-full overflow-hidden rounded-lg border border-[var(--border-subtle)] bg-[var(--input-bg)] text-left"
+                    >
+                      <MediaPreview
+                        path={img.cloudinaryPath}
+                        isVideo={isVideo}
+                        alt={img.label}
+                        className="aspect-[16/10] w-full object-cover"
+                      />
+                    </button>
+                    <h3 className="line-clamp-2 font-semibold text-[var(--admin-text)]">
+                      {img.label}
+                    </h3>
+                    <p className="mt-1 break-all text-xs text-[var(--admin-text-faint)]">
+                      {img.cloudinaryPath}
+                    </p>
+                    <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
+                      <AdminRowActions
+                        onView={() => openView(img)}
+                        onEdit={() => openEdit(img)}
+                        onDelete={() => setDeleteTarget(img)}
+                      />
+                    </div>
+                  </article>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-[var(--border-subtle)] px-6 py-10 text-center">
+                  <p className="text-sm font-medium text-[var(--admin-text)]">
+                    No {isVideo ? "video" : "image"} yet
+                  </p>
+                  <p className="mt-2 text-sm text-[var(--admin-text-dim)]">
+                    Add {isVideo ? "a video" : "an image"} for this section to
+                    show it on the live site.
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      })}
+
+      {otherImages.length > 0 && (
+        <section className="card-surface card-surface-interactive overflow-hidden">
+          <div className="border-b border-[var(--border-subtle)] px-4 py-3 sm:px-5 sm:py-4">
+            <h2 className="font-semibold text-[var(--admin-text)]">
+              Other images
+            </h2>
+            <p className="mt-0.5 text-xs text-[var(--admin-text-dim)]">
+              Images with custom section keys.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 p-4 min-[480px]:grid-cols-2 sm:p-5 lg:grid-cols-3">
+            {otherImages.map((img) => (
+              <article
+                key={img._id}
+                className="card-surface card-surface-interactive flex h-full flex-col p-4"
+              >
+                <button
+                  type="button"
+                  onClick={() => openView(img)}
+                  className="mb-4 block w-full overflow-hidden rounded-lg border border-[var(--border-subtle)] bg-[var(--input-bg)] text-left"
+                >
+                  <MediaPreview
+                    path={img.cloudinaryPath}
+                    isVideo={false}
+                    alt={img.label}
+                    className="aspect-[16/10] w-full object-cover"
+                  />
+                </button>
+                <h3 className="line-clamp-2 font-semibold text-[var(--admin-text)]">
+                  {img.label}
+                </h3>
+                <p className="mt-1 break-all text-xs text-[var(--admin-text-faint)]">
+                  {img.cloudinaryPath}
+                </p>
+                <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
+                  <AdminRowActions
+                    onView={() => openView(img)}
+                    onEdit={() => openEdit(img)}
+                    onDelete={() => setDeleteTarget(img)}
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <AdminModal
         open={modalMode !== "closed"}
         onClose={closeModal}
         title={
-          modalMode === "create"
-            ? "Add site image"
-            : modalMode === "edit"
-              ? "Edit site image"
-              : "Image details"
+          modalMode === "view"
+            ? "Media details"
+            : `${sectionLabel} — ${isShowreel ? "video" : "image"}`
         }
         description={modalMode === "view" ? viewItem?.label : undefined}
         size="md"
@@ -165,13 +332,13 @@ export default function ImagesPanel() {
                 Delete
               </AdminButton>
             </>
-          ) : isFormOpen ? (
+          ) : modalMode === "form" ? (
             <>
               <AdminButton variant="muted" onClick={closeModal}>
                 Cancel
               </AdminButton>
               <AdminButton variant="primary" type="submit" form="image-form">
-                Save image
+                Save
               </AdminButton>
             </>
           ) : undefined
@@ -205,8 +372,12 @@ export default function ImagesPanel() {
               />
             </div>
           </div>
-        ) : isFormOpen ? (
-          <form id="image-form" onSubmit={onSubmit} className="flex flex-col gap-4">
+        ) : modalMode === "form" ? (
+          <form
+            id="image-form"
+            onSubmit={onSubmit}
+            className="flex flex-col gap-4"
+          >
             <div>
               <label className={labelClass}>
                 {isShowreel ? "Showreel video" : "Section image"}
@@ -217,38 +388,14 @@ export default function ImagesPanel() {
                 value={cloudinaryPath}
                 resourceType={isShowreel ? "video" : "image"}
                 label={
-                  isShowreel ? "Upload MP4 to Cloudinary" : "Upload to Cloudinary"
+                  isShowreel
+                    ? "Upload MP4 to Cloudinary"
+                    : "Upload to Cloudinary"
                 }
                 onUploaded={(publicId) => setCloudinaryPath(publicId)}
               />
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <label className={labelClass}>Section</label>
-                <select
-                  className={inputClass}
-                  value={isPresetKey ? key : "custom"}
-                  onChange={(e) => {
-                    if (e.target.value !== "custom") onPreset(e.target.value);
-                  }}
-                >
-                  {SECTION_PRESETS.map((preset) => (
-                    <option key={preset.key} value={preset.key}>
-                      {preset.label}
-                    </option>
-                  ))}
-                  {!isPresetKey && <option value="custom">Custom</option>}
-                </select>
-              </div>
-              <div>
-                <label className={labelClass}>Section key</label>
-                <input
-                  className={inputClass}
-                  value={key}
-                  onChange={(e) => setKey(e.target.value)}
-                  required
-                />
-              </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>Label</label>
                 <input
@@ -258,16 +405,16 @@ export default function ImagesPanel() {
                   required
                 />
               </div>
-            </div>
-            <div>
-              <label className={labelClass}>Cloudinary path</label>
-              <input
-                className={inputClass}
-                value={cloudinaryPath}
-                onChange={(e) => setCloudinaryPath(e.target.value)}
-                placeholder="devmalitos/hero"
-                required
-              />
+              <div>
+                <label className={labelClass}>Cloudinary path</label>
+                <input
+                  className={inputClass}
+                  value={cloudinaryPath}
+                  onChange={(e) => setCloudinaryPath(e.target.value)}
+                  placeholder="devmalitos/hero"
+                  required
+                />
+              </div>
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
           </form>
@@ -283,40 +430,6 @@ export default function ImagesPanel() {
         onCancel={() => setDeleteTarget(null)}
         onConfirm={() => void confirmDelete()}
       />
-
-      <div className={adminGridClass}>
-        {images.map((img) => {
-          const isVideo = img.key === "about-showreel";
-          return (
-            <AdminEntityCard
-              key={img._id}
-              title={img.label}
-              meta={img.cloudinaryPath}
-              media={
-                isVideo ? (
-                  <video
-                    src={cloudinaryVideoUrl(img.cloudinaryPath)}
-                    muted
-                    playsInline
-                    preload="metadata"
-                    className="h-36 w-full bg-charcoal object-cover"
-                  />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={cloudinaryUrl(img.cloudinaryPath, { width: 480 })}
-                    alt={img.label}
-                    className="h-36 w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                  />
-                )
-              }
-              onView={() => openView(img)}
-              onEdit={() => openEdit(img)}
-              onDelete={() => setDeleteTarget(img)}
-            />
-          );
-        })}
-      </div>
     </div>
   );
 }

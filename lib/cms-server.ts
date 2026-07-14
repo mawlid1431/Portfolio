@@ -1,5 +1,5 @@
 import { api, getConvexClient } from "./convex";
-import { EXPERIENCE, FAQS, SOCIALS } from "./data";
+import { EDUCATION, EXPERIENCE, FAQS, SOCIALS, TECH_STACK } from "./data";
 
 export type PublicExperience = {
   role: string;
@@ -34,6 +34,49 @@ export async function fetchPublicExperiences(): Promise<PublicExperience[]> {
     // fall through
   }
   return EXPERIENCE;
+}
+
+export type PublicEducation = {
+  title: string;
+  org: string;
+  period: string;
+  text: string;
+};
+
+export type PublicSkillGroup = {
+  group: string;
+  items: string[];
+};
+
+export async function fetchPublicEducation(): Promise<PublicEducation[]> {
+  try {
+    const client = getConvexClient();
+    const items = await client.query(api.educations.listPublic, {});
+    if (items.length > 0) {
+      return items.map((e) => ({
+        title: e.title,
+        org: e.org,
+        period: e.period,
+        text: e.text,
+      }));
+    }
+  } catch {
+    // fall through
+  }
+  return EDUCATION;
+}
+
+export async function fetchPublicSkills(): Promise<PublicSkillGroup[]> {
+  try {
+    const client = getConvexClient();
+    const items = await client.query(api.skills.listPublic, {});
+    if (items.length > 0) {
+      return items.map((s) => ({ group: s.group, items: s.items }));
+    }
+  } catch {
+    // fall through
+  }
+  return TECH_STACK;
 }
 
 export async function fetchPublicFaqs(): Promise<PublicFaq[]> {
