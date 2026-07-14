@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import GlassButton from "@/components/GlassButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminMobileNav from "@/components/admin/AdminMobileNav";
+import { IconBars } from "@/components/admin/AdminIcons";
 import OverviewPanel from "@/components/admin/OverviewPanel";
 import ProjectsPanel from "@/components/admin/ProjectsPanel";
 import ImagesPanel from "@/components/admin/ImagesPanel";
@@ -22,6 +24,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { admin, loading } = useAdminSession();
   const [tab, setTab] = useState<AdminTab>("overview");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !admin) router.replace("/unknown");
@@ -46,16 +49,33 @@ export default function AdminDashboard() {
   return (
     <main className="admin-shell flex h-dvh overflow-hidden bg-charcoal text-[var(--admin-text)]">
       <AdminSidebar tab={tab} onTabChange={setTab} onLogout={() => void logout()} />
+      <AdminMobileNav
+        open={mobileNavOpen}
+        tab={tab}
+        onTabChange={setTab}
+        onClose={() => setMobileNavOpen(false)}
+        onLogout={() => void logout()}
+      />
 
       <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-subtle)] bg-charcoal/90 px-4 py-4 backdrop-blur-md sm:px-6 md:px-8">
-          <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              aria-label="Open menu"
+              onClick={() => setMobileNavOpen(true)}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[var(--border-subtle)] text-[var(--admin-text-dim)] transition-colors hover:border-secondary/40 hover:text-secondary lg:hidden"
+            >
+              <IconBars className="h-5 w-5" />
+            </button>
+            <div className="min-w-0">
             <p className="truncate text-sm text-secondary">
               Welcome back, {admin.name}
             </p>
             <h1 className="mt-1 truncate text-2xl font-bold text-[var(--admin-text)] md:text-3xl">
               {activeLabel}
             </h1>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ThemeToggle />
