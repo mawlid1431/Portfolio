@@ -354,7 +354,7 @@ export default function OverviewPanel({
                   >
                     <p className="font-medium text-cream">{p.title}</p>
                     <p className="mt-0.5 text-[11px] text-cream-dim">
-                      {p.year} · {p.tag} · {p.status}
+                      {p.year} · {p.tag ? `${p.tag} · ` : ""}{p.status}
                     </p>
                   </li>
                 ))}

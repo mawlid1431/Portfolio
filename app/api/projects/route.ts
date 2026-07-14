@@ -23,37 +23,28 @@ export async function POST(request: Request) {
 
     const body = (await request.json()) as {
       title?: string;
-      slug?: string;
       pitch?: string;
-      tag?: string;
       year?: number;
       imagePath?: string;
       liveUrl?: string;
-      featured?: boolean;
-      status?: "live" | "draft";
       idempotencyKey?: string;
     };
 
-    if (!body.title?.trim() || !body.slug?.trim() || !body.pitch?.trim() || !body.tag?.trim()) {
+    if (!body.title?.trim() || !body.pitch?.trim() || !body.imagePath?.trim()) {
       return NextResponse.json(
-        { error: "Title, slug, pitch, and category are required." },
+        { error: "Title, description, and image are required." },
         { status: 400 },
       );
     }
 
-    const slug = body.slug.trim().toLowerCase();
     const client = getConvexClient();
     const projectId = await client.mutation(api.projects.create, {
       tokenHash,
       title: body.title,
-      slug,
       pitch: body.pitch,
-      tag: body.tag,
       year: body.year ?? new Date().getFullYear(),
-      imagePath: body.imagePath?.trim() || `devmalitos/projects/${slug}`,
+      imagePath: body.imagePath.trim(),
       liveUrl: body.liveUrl?.trim() || undefined,
-      featured: body.featured ?? false,
-      status: body.status ?? "draft",
       idempotencyKey: body.idempotencyKey ?? createIdempotencyKey("project"),
     });
 

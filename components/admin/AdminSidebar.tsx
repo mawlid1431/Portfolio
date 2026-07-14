@@ -76,7 +76,7 @@ export default function AdminSidebar({
     <motion.aside
       animate={{ width: iconOnly ? 80 : 272 }}
       transition={{ type: "spring", stiffness: 320, damping: 32 }}
-      className="sticky top-0 flex h-[100dvh] shrink-0 flex-col overflow-hidden border-r border-[var(--border-subtle)] bg-[var(--card-bg)]"
+      className="flex h-full shrink-0 flex-col overflow-hidden border-r border-[var(--border-subtle)] bg-[var(--card-bg)]"
     >
       <div
         className={cn(

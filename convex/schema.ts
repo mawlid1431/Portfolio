@@ -27,7 +27,7 @@ export default defineSchema({
     slug: v.string(),
     title: v.string(),
     pitch: v.string(),
-    tag: v.string(),
+    tag: v.optional(v.string()),
     year: v.number(),
     imagePath: v.string(),
     liveUrl: v.optional(v.string()),

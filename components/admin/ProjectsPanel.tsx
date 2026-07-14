@@ -18,15 +18,10 @@ import { useSubmitLock } from "@/lib/useSubmitLock";
 
 type Draft = {
   title: string;
-  slug: string;
   pitch: string;
-  tag: string;
   year: number;
   imagePath: string;
-  hasLiveSite: boolean;
   liveUrl: string;
-  featured: boolean;
-  status: "live" | "draft";
 };
 
 type ProjectItem = NonNullable<
@@ -37,29 +32,11 @@ type ModalMode = "closed" | "create" | "edit" | "view";
 
 const empty: Draft = {
   title: "",
-  slug: "",
   pitch: "",
-  tag: "",
   year: new Date().getFullYear(),
   imagePath: "",
-  hasLiveSite: false,
   liveUrl: "",
-  featured: false,
-  status: "live",
 };
-
-function InnerField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="card-surface-inner p-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
-        {label}
-      </p>
-      <p className="mt-1 whitespace-pre-wrap break-words text-sm text-[var(--admin-text)]">
-        {value}
-      </p>
-    </div>
-  );
-}
 
 export default function ProjectsPanel() {
   const tokenHash = useAdminTokenHash();
@@ -100,15 +77,10 @@ export default function ProjectsPanel() {
     setViewItem(null);
     setDraft({
       title: project.title,
-      slug: project.slug,
       pitch: project.pitch,
-      tag: project.tag,
       year: project.year,
       imagePath: project.imagePath,
-      hasLiveSite: Boolean(project.liveUrl),
       liveUrl: project.liveUrl ?? "",
-      featured: project.featured,
-      status: project.status,
     });
     setModalMode("edit");
   };
@@ -135,15 +107,18 @@ export default function ProjectsPanel() {
     if (!tokenHash) return;
     setError("");
 
+    if (!draft.imagePath.trim()) {
+      setError("Please upload a project image first.");
+      return;
+    }
+
     await run(async () => {
-      // hasLiveSite is UI-only state — it must not reach the Convex validators
-      const { hasLiveSite, ...fields } = draft;
       const payload = {
-        ...fields,
-        liveUrl: hasLiveSite ? draft.liveUrl.trim() || undefined : undefined,
-        imagePath:
-          draft.imagePath.trim() ||
-          `devmalitos/projects/${draft.slug.trim().toLowerCase()}`,
+        title: draft.title,
+        pitch: draft.pitch,
+        year: draft.year,
+        imagePath: draft.imagePath.trim(),
+        liveUrl: draft.liveUrl.trim() || undefined,
       };
 
       if (editingId) {
@@ -188,12 +163,8 @@ export default function ProjectsPanel() {
               ? "Edit project"
               : "Project details"
         }
-        description={
-          isReadOnly
-            ? viewItem?.title
-            : "Fill in the details below and save to update your portfolio."
-        }
-        size="lg"
+        description={isReadOnly ? viewItem?.title : undefined}
+        size="md"
         footer={
           isReadOnly && viewItem ? (
             <>
@@ -235,7 +206,7 @@ export default function ProjectsPanel() {
               <img
                 src={cloudinaryUrl(viewItem.imagePath, { width: 1200 })}
                 alt={viewItem.title}
-                className="max-h-72 w-full object-cover"
+                className="max-h-64 w-full object-cover"
               />
             </div>
 
@@ -252,88 +223,106 @@ export default function ProjectsPanel() {
               >
                 {viewItem.status}
               </span>
-              <p className="text-sm text-[var(--admin-text-dim)]">
-                {viewItem.tag} · {viewItem.year}
-              </p>
             </div>
 
-            <div>
-              <h3 className="text-lg font-semibold text-[var(--admin-text)]">
-                {viewItem.title}
-              </h3>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--admin-text-dim)]">
-                {viewItem.pitch}
-              </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="card-surface-inner p-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
+                  Title
+                </p>
+                <p className="mt-1 break-words text-sm font-semibold text-[var(--admin-text)]">
+                  {viewItem.title}
+                </p>
+              </div>
+              <div className="card-surface-inner p-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
+                  Year
+                </p>
+                <p className="mt-1 text-sm text-[var(--admin-text)]">
+                  {viewItem.year}
+                </p>
+              </div>
+              <div className="card-surface-inner p-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
+                  Live link
+                </p>
+                {viewItem.liveUrl ? (
+                  <a
+                    href={viewItem.liveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 block truncate text-sm font-medium text-secondary hover:underline"
+                  >
+                    {viewItem.liveUrl}
+                  </a>
+                ) : (
+                  <p className="mt-1 text-sm text-[var(--admin-text-dim)]">—</p>
+                )}
+              </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <InnerField label="Slug" value={viewItem.slug} />
-              <InnerField label="Image path" value={viewItem.imagePath} />
-            </div>
-
-            {viewItem.liveUrl && (
-              <a
-                href={viewItem.liveUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-block text-sm font-medium text-secondary hover:underline"
-              >
-                View live project →
-              </a>
-            )}
+            <p className="whitespace-pre-wrap text-sm text-[var(--admin-text-dim)]">
+              {viewItem.pitch}
+            </p>
           </div>
         ) : isFormOpen ? (
           <form
             id="project-form"
             onSubmit={onSubmit}
-            className="grid gap-4 md:grid-cols-2"
+            className="flex flex-col gap-4"
           >
-            <div className="md:col-span-2">
+            <div>
               <label className={labelClass}>Project image</label>
               <CloudinaryUpload
                 folder="devmalitos/projects"
-                publicId={draft.slug.trim().toLowerCase() || undefined}
                 value={draft.imagePath}
                 label="Upload project image"
                 onUploaded={(publicId) =>
                   setDraft({ ...draft, imagePath: publicId })
                 }
               />
-              <input
-                className={`${inputClass} mt-3`}
-                placeholder="devmalitos/projects/my-project"
-                value={draft.imagePath}
-                onChange={(e) =>
-                  setDraft({ ...draft, imagePath: e.target.value })
-                }
-                required
-              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className={labelClass}>Title</label>
+                <input
+                  className={inputClass}
+                  value={draft.title}
+                  onChange={(e) =>
+                    setDraft({ ...draft, title: e.target.value })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Year</label>
+                <input
+                  type="number"
+                  min={2000}
+                  max={2100}
+                  className={inputClass}
+                  value={draft.year}
+                  onChange={(e) =>
+                    setDraft({ ...draft, year: Number(e.target.value) })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Live link</label>
+                <input
+                  type="url"
+                  className={inputClass}
+                  placeholder="https://… (optional)"
+                  value={draft.liveUrl}
+                  onChange={(e) =>
+                    setDraft({ ...draft, liveUrl: e.target.value })
+                  }
+                />
+              </div>
             </div>
             <div>
-              <label className={labelClass}>Title</label>
-              <input
-                className={inputClass}
-                value={draft.title}
-                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Year</label>
-              <input
-                type="number"
-                min={2000}
-                max={2100}
-                className={inputClass}
-                value={draft.year}
-                onChange={(e) =>
-                  setDraft({ ...draft, year: Number(e.target.value) })
-                }
-                required
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className={labelClass}>Description</label>
+              <label className={labelClass}>Short description</label>
               <textarea
                 className={inputClass}
                 rows={3}
@@ -342,90 +331,7 @@ export default function ProjectsPanel() {
                 required
               />
             </div>
-            <div>
-              <label className={labelClass}>Slug</label>
-              <input
-                className={inputClass}
-                value={draft.slug}
-                onChange={(e) =>
-                  setDraft({
-                    ...draft,
-                    slug: e.target.value,
-                    imagePath:
-                      draft.imagePath ||
-                      `devmalitos/projects/${e.target.value.trim().toLowerCase()}`,
-                  })
-                }
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Category</label>
-              <input
-                className={inputClass}
-                value={draft.tag}
-                onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
-                required
-              />
-            </div>
-            <div className="md:col-span-2 flex flex-col gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--input-bg)] p-4">
-              <label className="flex items-center gap-2 text-sm text-[var(--admin-text-dim)]">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-[var(--secondary)]"
-                  checked={draft.hasLiveSite}
-                  onChange={(e) =>
-                    setDraft({ ...draft, hasLiveSite: e.target.checked })
-                  }
-                />
-                This project has a live website.
-              </label>
-              {draft.hasLiveSite && (
-                <div>
-                  <label className={labelClass}>Live site URL</label>
-                  <input
-                    type="url"
-                    className={inputClass}
-                    placeholder="https://example.com"
-                    value={draft.liveUrl}
-                    onChange={(e) =>
-                      setDraft({ ...draft, liveUrl: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              )}
-            </div>
-            <div>
-              <label className={labelClass}>Status</label>
-              <select
-                className={inputClass}
-                value={draft.status}
-                onChange={(e) =>
-                  setDraft({
-                    ...draft,
-                    status: e.target.value as "live" | "draft",
-                  })
-                }
-              >
-                <option value="live">Live</option>
-                <option value="draft">Draft</option>
-              </select>
-            </div>
-            <label className="flex items-end gap-2 pb-3 text-sm text-[var(--admin-text-dim)]">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-[var(--secondary)]"
-                checked={draft.featured}
-                onChange={(e) =>
-                  setDraft({ ...draft, featured: e.target.checked })
-                }
-              />
-              Featured
-            </label>
-            {error && (
-              <p className="md:col-span-2 text-xs text-red-400">{error}</p>
-            )}
+            {error && <p className="text-xs text-red-400">{error}</p>}
           </form>
         ) : null}
       </AdminModal>
@@ -435,9 +341,7 @@ export default function ProjectsPanel() {
         entityName="project"
         targetLabel={deleteTarget?.title ?? ""}
         detail={
-          deleteTarget
-            ? `${deleteTarget.tag} · ${deleteTarget.year} · ${deleteTarget.status}`
-            : undefined
+          deleteTarget ? `${deleteTarget.year} · ${deleteTarget.status}` : undefined
         }
         deleting={deleting}
         onCancel={() => setDeleteTarget(null)}
@@ -449,7 +353,7 @@ export default function ProjectsPanel() {
           <AdminEntityCard
             key={p._id}
             title={p.title}
-            meta={`${p.tag} · ${p.year}`}
+            meta={String(p.year)}
             badge={
               <span className="flex shrink-0 flex-col items-end gap-1">
                 <span

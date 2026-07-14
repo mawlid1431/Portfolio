@@ -9,7 +9,7 @@ export const projectValidator = v.object({
   slug: v.string(),
   title: v.string(),
   pitch: v.string(),
-  tag: v.string(),
+  tag: v.optional(v.string()),
   year: v.number(),
   imagePath: v.string(),
   liveUrl: v.optional(v.string()),
@@ -25,7 +25,7 @@ export type ProjectDoc = {
   slug: string;
   title: string;
   pitch: string;
-  tag: string;
+  tag?: string;
   year: number;
   imagePath: string;
   liveUrl?: string;
@@ -34,6 +34,15 @@ export type ProjectDoc = {
   createdAt: number;
   updatedAt: number;
 };
+
+/** Derive a URL-safe slug from the project title. */
+function slugify(title: string) {
+  return title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 function sortLiveProjects<T extends { year: number; createdAt: number }>(
   projects: T[],
@@ -50,7 +59,7 @@ function withDefaults(project: {
   slug: string;
   title: string;
   pitch: string;
-  tag: string;
+  tag?: string;
   year?: number;
   imagePath?: string;
   liveUrl?: string;
@@ -128,14 +137,10 @@ export const create = mutation({
   args: {
     tokenHash: v.string(),
     title: v.string(),
-    slug: v.string(),
     pitch: v.string(),
-    tag: v.string(),
     year: v.number(),
     imagePath: v.string(),
     liveUrl: v.optional(v.string()),
-    featured: v.boolean(),
-    status: v.union(v.literal("live"), v.literal("draft")),
     idempotencyKey: v.string(),
   },
   returns: v.id("projects"),
@@ -155,14 +160,15 @@ export const create = mutation({
       }
     }
 
-    const slug = args.slug.trim().toLowerCase();
-    const duplicate = await ctx.db
-      .query("projects")
-      .withIndex("by_slug", (q) => q.eq("slug", slug))
-      .unique();
-
-    if (duplicate) {
-      throw new Error("A project with this slug already exists");
+    const baseSlug = slugify(args.title) || "project";
+    let slug = baseSlug;
+    for (let suffix = 2; ; suffix++) {
+      const duplicate = await ctx.db
+        .query("projects")
+        .withIndex("by_slug", (q) => q.eq("slug", slug))
+        .unique();
+      if (!duplicate) break;
+      slug = `${baseSlug}-${suffix}`;
     }
 
     const now = Date.now();
@@ -170,12 +176,11 @@ export const create = mutation({
       slug,
       title: args.title.trim(),
       pitch: args.pitch.trim(),
-      tag: args.tag.trim(),
       year: args.year,
       imagePath: args.imagePath.trim(),
       liveUrl: args.liveUrl?.trim() || undefined,
-      featured: args.featured,
-      status: args.status,
+      featured: false,
+      status: "live",
       createdAt: now,
       updatedAt: now,
     });
@@ -196,39 +201,22 @@ export const update = mutation({
     tokenHash: v.string(),
     projectId: v.id("projects"),
     title: v.string(),
-    slug: v.string(),
     pitch: v.string(),
-    tag: v.string(),
     year: v.number(),
     imagePath: v.string(),
     liveUrl: v.optional(v.string()),
-    featured: v.boolean(),
-    status: v.union(v.literal("live"), v.literal("draft")),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     await requireSession(ctx, args.tokenHash);
 
-    const slug = args.slug.trim().toLowerCase();
-    const duplicate = await ctx.db
-      .query("projects")
-      .withIndex("by_slug", (q) => q.eq("slug", slug))
-      .unique();
-
-    if (duplicate && duplicate._id !== args.projectId) {
-      throw new Error("A project with this slug already exists");
-    }
-
+    // Slug stays stable after creation so public project URLs don't break.
     await ctx.db.patch("projects", args.projectId, {
-      slug,
       title: args.title.trim(),
       pitch: args.pitch.trim(),
-      tag: args.tag.trim(),
       year: args.year,
       imagePath: args.imagePath.trim(),
       liveUrl: args.liveUrl?.trim() || undefined,
-      featured: args.featured,
-      status: args.status,
       updatedAt: Date.now(),
     });
     return null;

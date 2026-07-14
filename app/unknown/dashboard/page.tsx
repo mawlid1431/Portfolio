@@ -43,10 +43,10 @@ export default function AdminDashboard() {
   const activeLabel = ADMIN_NAV.find((n) => n.key === tab)?.label ?? "Dashboard";
 
   return (
-    <main className="admin-shell flex min-h-screen bg-charcoal text-[var(--admin-text)]">
+    <main className="admin-shell flex h-dvh overflow-hidden bg-charcoal text-[var(--admin-text)]">
       <AdminSidebar tab={tab} onTabChange={setTab} onLogout={() => void logout()} />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-subtle)] bg-charcoal/90 px-4 py-4 backdrop-blur-md sm:px-6 md:px-8">
           <div className="min-w-0">
             <p className="truncate text-sm text-secondary">
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <section className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+        <section className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
           {tab === "overview" && (
             <OverviewPanel adminName={admin.name} onNavigate={setTab} />
           )}

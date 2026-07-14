@@ -5,7 +5,7 @@ export type PublicProject = {
   slug: string;
   title: string;
   pitch: string;
-  tag: string;
+  tag?: string;
   year: number;
   imagePath: string;
   liveUrl?: string;

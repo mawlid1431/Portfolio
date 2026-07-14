@@ -32,9 +32,11 @@ export default function ProjectCard({
       <div className="flex flex-1 flex-col justify-between p-6">
         <div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[10px] uppercase tracking-[0.3em] text-emerald-bright">
-              {project.tag}
-            </span>
+            {project.tag && (
+              <span className="text-[10px] uppercase tracking-[0.3em] text-emerald-bright">
+                {project.tag}
+              </span>
+            )}
             {project.featured && (
               <span className="rounded-full bg-emerald-glow/15 px-3 py-1 text-[10px] uppercase tracking-[0.15em] text-emerald-bright">
                 Featured

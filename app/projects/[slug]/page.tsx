@@ -63,9 +63,11 @@ export default async function ProjectDetailPage({ params }: Props) {
             <span className="rounded-full border border-cream/15 px-4 py-2 text-xs uppercase tracking-[0.25em] text-cream-dim">
               {project.year}
             </span>
-            <span className="text-xs uppercase tracking-[0.3em] text-emerald-bright">
-              {project.tag}
-            </span>
+            {project.tag && (
+              <span className="text-xs uppercase tracking-[0.3em] text-emerald-bright">
+                {project.tag}
+              </span>
+            )}
             {project.featured && (
               <span className="rounded-full bg-emerald-glow/15 px-3 py-1 text-[10px] uppercase tracking-[0.15em] text-emerald-bright">
                 Featured
