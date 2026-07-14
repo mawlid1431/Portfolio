@@ -21,7 +21,7 @@ export type LibraryAsset = {
   createdAt: string;
 };
 
-/** List uploaded assets in the account (newest first). */
+/** List this project's uploaded assets (newest first). */
 export async function listCloudinaryAssets(
   resourceType: "image" | "video",
   maxResults = 100,
@@ -29,6 +29,8 @@ export async function listCloudinaryAssets(
   const result = (await cloudinary.api.resources({
     type: "upload",
     resource_type: resourceType,
+    // Only this project's folder — the account also holds other sites' media.
+    prefix: "devmalitos",
     max_results: maxResults,
     direction: "desc",
   })) as {

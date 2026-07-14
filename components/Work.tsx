@@ -45,13 +45,7 @@ export default function Work({
         </div>
 
         <div className="mt-16 grid gap-8 md:grid-cols-3">
-          {featured.length === 0 ? (
-            <p className="col-span-full text-sm text-cream-dim">
-              No featured projects yet. Mark projects as featured in the admin
-              dashboard.
-            </p>
-          ) : (
-            featured.map((p, i) => (
+          {featured.map((p, i) => (
             <div
               key={p.slug}
               className="transition-all duration-700"
@@ -63,8 +57,7 @@ export default function Work({
             >
               <ProjectCard project={p} />
             </div>
-            ))
-          )}
+          ))}
         </div>
 
         <Link

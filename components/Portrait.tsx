@@ -32,17 +32,8 @@ export default function Portrait({
       <div
         className={`flex items-center justify-center bg-gradient-to-b from-ink-soft to-ink ${className}`}
       >
-        <div className="text-center px-6">
-          <div className="mx-auto mb-4 h-24 w-24 rounded-full border border-emerald-glow/40 flex items-center justify-center">
-            <span className="font-display text-4xl text-emerald-bright">
-              MH
-            </span>
-          </div>
-          <p className="text-xs uppercase tracking-widest text-cream-dim">
-            Upload to Cloudinary
-            <br />
-            <code className="text-emerald-bright">devmalitos/</code>
-          </p>
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-emerald-glow/40">
+          <span className="font-display text-4xl text-emerald-bright">MH</span>
         </div>
       </div>
     );

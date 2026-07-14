@@ -56,8 +56,6 @@ export function resolveSiteVideo(
   key: Extract<SiteImageKey, "about-showreel">,
 ): string {
   const path = map[key] ?? DEFAULT_PATHS[key];
-  const url = cloudinaryVideoUrl(path);
-  if (url) return url;
-
-  return "https://res.cloudinary.com/demo/video/upload/q_auto,f_auto/c_scale,w_1920/sea-turtle";
+  // Empty string means no video — the player then just shows its poster image.
+  return cloudinaryVideoUrl(path);
 }

@@ -19,6 +19,7 @@ import type * as e2e from "../e2e.js";
 import type * as educations from "../educations.js";
 import type * as experiences from "../experiences.js";
 import type * as faqs from "../faqs.js";
+import type * as fixSiteData from "../fixSiteData.js";
 import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_seedData from "../lib/seedData.js";
 import type * as lib_session from "../lib/session.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   educations: typeof educations;
   experiences: typeof experiences;
   faqs: typeof faqs;
+  fixSiteData: typeof fixSiteData;
   "lib/rateLimit": typeof lib_rateLimit;
   "lib/seedData": typeof lib_seedData;
   "lib/session": typeof lib_session;
