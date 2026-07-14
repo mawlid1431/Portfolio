@@ -49,9 +49,9 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Reveal>
 
         <Reveal delay={0.05}>
-          <div className="mt-8 overflow-hidden rounded-3xl border border-emerald-glow/20">
+          <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-3xl border border-emerald-glow/20">
             <Portrait
-              src={projectImageUrl(project.imagePath, 1400)}
+              src={projectImageUrl(project.imagePath, 1200)}
               alt={project.title}
               className="aspect-[16/9] w-full object-cover"
             />
@@ -59,49 +59,49 @@ export default async function ProjectDetailPage({ params }: Props) {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <span className="rounded-full border border-cream/15 px-4 py-2 text-xs uppercase tracking-[0.25em] text-cream-dim">
-              {project.year}
-            </span>
+          <div className="mx-auto max-w-3xl">
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <h1 className="font-display text-4xl uppercase leading-none md:text-6xl">
+                {project.title}
+              </h1>
+              {project.featured && (
+                <span className="rounded-full bg-emerald-glow/15 px-3 py-1 text-[10px] uppercase tracking-[0.15em] text-emerald-bright">
+                  Featured
+                </span>
+              )}
+            </div>
             {project.tag && (
-              <span className="text-xs uppercase tracking-[0.3em] text-emerald-bright">
+              <p className="mt-3 text-xs uppercase tracking-[0.3em] text-emerald-bright">
                 {project.tag}
-              </span>
+              </p>
             )}
-            {project.featured && (
-              <span className="rounded-full bg-emerald-glow/15 px-3 py-1 text-[10px] uppercase tracking-[0.15em] text-emerald-bright">
-                Featured
+
+            <p className="mt-6 text-base leading-relaxed text-cream-dim md:text-lg">
+              {project.pitch}
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              {project.liveUrl ? (
+                <GlassButton
+                  href={project.liveUrl}
+                  external
+                  variant="accent"
+                  size="md"
+                >
+                  View live site ↗
+                </GlassButton>
+              ) : (
+                <span className="glass-btn glass-btn-ghost glass-btn-md pointer-events-none opacity-70">
+                  <span className="glass-btn-label">Live link coming soon</span>
+                </span>
+              )}
+              <span className="rounded-full border border-cream/15 px-4 py-2 text-xs uppercase tracking-[0.25em] text-cream-dim">
+                {project.year}
               </span>
-            )}
-          </div>
-
-          <h1 className="font-display mt-6 text-5xl uppercase leading-none md:text-7xl">
-            {project.title}
-          </h1>
-
-          <p className="mt-8 max-w-2xl text-base leading-relaxed text-cream-dim md:text-lg">
-            {project.pitch}
-          </p>
-
-          <div className="mt-10 flex flex-wrap gap-4">
-            {project.liveUrl ? (
-              <GlassButton
-                href={project.liveUrl}
-                external
-                variant="accent"
-                size="md"
-              >
-                View live site ↗
+              <GlassButton href="/contact" variant="ghost" size="md">
+                Start a similar project
               </GlassButton>
-            ) : (
-              <span className="glass-btn glass-btn-ghost glass-btn-md pointer-events-none opacity-70">
-                <span className="glass-btn-label">Live link coming soon</span>
-              </span>
-            )}
-
-            <GlassButton href="/contact" variant="ghost" size="md">
-              Start a similar project
-            </GlassButton>
+            </div>
           </div>
         </Reveal>
 

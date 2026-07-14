@@ -127,7 +127,7 @@ export default function ExperiencePanel() {
               ? "Edit experience"
               : "Experience details"
         }
-        size="lg"
+        size="md"
         footer={
           modalMode === "view" ? (
             <>

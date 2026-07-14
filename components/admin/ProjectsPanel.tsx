@@ -200,17 +200,20 @@ export default function ProjectsPanel() {
         }
       >
         {isReadOnly && viewItem ? (
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div className="overflow-hidden rounded-xl border border-[var(--border-subtle)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={cloudinaryUrl(viewItem.imagePath, { width: 1200 })}
+                src={cloudinaryUrl(viewItem.imagePath, { width: 800 })}
                 alt={viewItem.title}
-                className="max-h-64 w-full object-cover"
+                className="h-44 w-full object-cover"
               />
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              <h3 className="text-lg font-semibold text-[var(--admin-text)]">
+                {viewItem.title}
+              </h3>
               {viewItem.featured && (
                 <span className={featuredBadgeClass}>Featured</span>
               )}
@@ -225,23 +228,11 @@ export default function ProjectsPanel() {
               </span>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="card-surface-inner p-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
-                  Title
-                </p>
-                <p className="mt-1 break-words text-sm font-semibold text-[var(--admin-text)]">
-                  {viewItem.title}
-                </p>
-              </div>
-              <div className="card-surface-inner p-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
-                  Year
-                </p>
-                <p className="mt-1 text-sm text-[var(--admin-text)]">
-                  {viewItem.year}
-                </p>
-              </div>
+            <p className="whitespace-pre-wrap text-sm text-[var(--admin-text-dim)]">
+              {viewItem.pitch}
+            </p>
+
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="card-surface-inner p-3">
                 <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
                   Live link
@@ -259,11 +250,15 @@ export default function ProjectsPanel() {
                   <p className="mt-1 text-sm text-[var(--admin-text-dim)]">—</p>
                 )}
               </div>
+              <div className="card-surface-inner p-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
+                  Year
+                </p>
+                <p className="mt-1 text-sm text-[var(--admin-text)]">
+                  {viewItem.year}
+                </p>
+              </div>
             </div>
-
-            <p className="whitespace-pre-wrap text-sm text-[var(--admin-text-dim)]">
-              {viewItem.pitch}
-            </p>
           </div>
         ) : isFormOpen ? (
           <form

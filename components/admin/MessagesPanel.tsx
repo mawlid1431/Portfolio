@@ -57,7 +57,7 @@ export default function MessagesPanel() {
             ? `Received ${formatDate(viewItem.createdAt)}`
             : undefined
         }
-        size="lg"
+        size="md"
         footer={
           viewItem ? (
             <>

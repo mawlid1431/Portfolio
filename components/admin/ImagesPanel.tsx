@@ -5,15 +5,11 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { cloudinaryUrl, cloudinaryVideoUrl } from "@/lib/cloudinary";
 import AdminModal from "./AdminModal";
+import AdminButton from "./AdminButton";
+import AdminDeleteConfirmModal from "./AdminDeleteConfirmModal";
 import AdminEntityCard, { adminGridClass } from "./AdminEntityCard";
 import CloudinaryUpload from "./CloudinaryUpload";
-import {
-  btnGhost,
-  btnPrimary,
-  inputClass,
-  labelClass,
-  useAdminTokenHash,
-} from "@/lib/admin-hooks";
+import { inputClass, labelClass, useAdminTokenHash } from "@/lib/admin-hooks";
 
 const SECTION_PRESETS = [
   { key: "hero", label: "Hero (home)" },
@@ -30,6 +26,17 @@ type ImageItem = NonNullable<
 
 type ModalMode = "closed" | "create" | "edit" | "view";
 
+function ViewField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="card-surface-inner p-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-[var(--admin-text-faint)]">
+        {label}
+      </p>
+      <p className="mt-1 break-all text-sm text-[var(--admin-text)]">{value}</p>
+    </div>
+  );
+}
+
 export default function ImagesPanel() {
   const tokenHash = useAdminTokenHash();
   const images = useQuery(
@@ -45,6 +52,8 @@ export default function ImagesPanel() {
   const [error, setError] = useState("");
   const [modalMode, setModalMode] = useState<ModalMode>("closed");
   const [viewItem, setViewItem] = useState<ImageItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ImageItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const isShowreel = key === "about-showreel";
 
@@ -54,7 +63,9 @@ export default function ImagesPanel() {
     setError("");
   };
 
-  const onPreset = (preset: (typeof SECTION_PRESETS)[number]) => {
+  const onPreset = (presetKey: string) => {
+    const preset = SECTION_PRESETS.find((p) => p.key === presetKey);
+    if (!preset) return;
     setKey(preset.key);
     setLabel(preset.label);
     const existing = images?.find((i) => i.key === preset.key);
@@ -63,7 +74,7 @@ export default function ImagesPanel() {
 
   const openCreate = () => {
     setViewItem(null);
-    onPreset(SECTION_PRESETS[0]!);
+    onPreset(SECTION_PRESETS[0]!.key);
     setModalMode("create");
   };
 
@@ -80,6 +91,18 @@ export default function ImagesPanel() {
     setModalMode("view");
   };
 
+  const confirmDelete = async () => {
+    if (!tokenHash || !deleteTarget) return;
+    setDeleting(true);
+    try {
+      await remove({ tokenHash, imageId: deleteTarget._id });
+      setDeleteTarget(null);
+      if (viewItem?._id === deleteTarget._id) closeModal();
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!tokenHash) return;
@@ -93,41 +116,24 @@ export default function ImagesPanel() {
   };
 
   if (!tokenHash || images === undefined) {
-    return <p className="text-sm text-cream-dim">Loading images…</p>;
+    return (
+      <p className="text-sm text-[var(--admin-text-dim)]">Loading images…</p>
+    );
   }
 
   const isFormOpen = modalMode === "create" || modalMode === "edit";
-  const previewPath = viewItem?.cloudinaryPath ?? cloudinaryPath;
-  const previewIsShowreel =
-    viewItem?.key === "about-showreel" || isShowreel;
+  const isPresetKey = SECTION_PRESETS.some((p) => p.key === key);
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-cream-dim">
-        Upload images to Cloudinary. Paths are saved in Convex and appear on the
-        live site after save.
-      </p>
-
-      <div className="flex flex-wrap justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {SECTION_PRESETS.map((preset) => (
-            <button
-              key={preset.key}
-              type="button"
-              className={btnGhost}
-              onClick={() => {
-                onPreset(preset);
-                setModalMode("create");
-                setViewItem(null);
-              }}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
-        <button type="button" className={btnPrimary} onClick={openCreate}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-[var(--admin-text-dim)]">
+          Upload images to Cloudinary. Paths are saved in Convex and appear on
+          the live site after save.
+        </p>
+        <AdminButton variant="primary" onClick={openCreate}>
           Add image
-        </button>
+        </AdminButton>
       </div>
 
       <AdminModal
@@ -135,83 +141,105 @@ export default function ImagesPanel() {
         onClose={closeModal}
         title={
           modalMode === "create"
-            ? "New site image"
+            ? "Add site image"
             : modalMode === "edit"
               ? "Edit site image"
               : "Image details"
         }
-        size="xl"
+        description={modalMode === "view" ? viewItem?.label : undefined}
+        size="md"
         footer={
-          modalMode === "view" ? (
+          modalMode === "view" && viewItem ? (
             <>
-              <button type="button" className={btnGhost} onClick={closeModal}>
+              <AdminButton variant="muted" onClick={closeModal}>
                 Close
-              </button>
-              {viewItem && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => openEdit(viewItem)}
-                >
-                  Edit
-                </button>
-              )}
+              </AdminButton>
+              <AdminButton variant="simple" onClick={() => openEdit(viewItem)}>
+                Edit
+              </AdminButton>
+              <AdminButton
+                variant="muted"
+                className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+                onClick={() => setDeleteTarget(viewItem)}
+              >
+                Delete
+              </AdminButton>
             </>
           ) : isFormOpen ? (
             <>
-              <button type="button" className={btnGhost} onClick={closeModal}>
+              <AdminButton variant="muted" onClick={closeModal}>
                 Cancel
-              </button>
-              <button type="submit" form="image-form" className={btnPrimary}>
-                Save section image
-              </button>
+              </AdminButton>
+              <AdminButton variant="primary" type="submit" form="image-form">
+                Save image
+              </AdminButton>
             </>
           ) : undefined
         }
       >
         {modalMode === "view" && viewItem ? (
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-4">
-              <div>
-                <p className={labelClass}>Section key</p>
-                <p className="mt-1 text-sm text-cream">{viewItem.key}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Label</p>
-                <p className="mt-1 text-sm text-cream">{viewItem.label}</p>
-              </div>
-              <div>
-                <p className={labelClass}>Cloudinary path</p>
-                <p className="mt-1 break-all text-sm text-cream">
-                  {viewItem.cloudinaryPath}
-                </p>
-              </div>
-            </div>
-            <div>
-              <p className={labelClass}>Preview</p>
-              {previewIsShowreel ? (
+          <div className="space-y-5">
+            <div className="overflow-hidden rounded-xl border border-[var(--border-subtle)]">
+              {viewItem.key === "about-showreel" ? (
                 <video
-                  src={cloudinaryVideoUrl(previewPath)}
+                  src={cloudinaryVideoUrl(viewItem.cloudinaryPath)}
                   controls
-                  className="mt-2 max-h-64 w-full rounded-xl border border-cream/10 object-cover"
+                  className="h-44 w-full object-cover"
                 />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={cloudinaryUrl(previewPath, { width: 800 })}
+                  src={cloudinaryUrl(viewItem.cloudinaryPath, { width: 800 })}
                   alt={viewItem.label}
-                  className="mt-2 max-h-64 w-full rounded-xl border border-cream/10 object-cover"
+                  className="h-44 w-full object-cover"
                 />
               )}
             </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <ViewField label="Section key" value={viewItem.key} />
+              <ViewField label="Label" value={viewItem.label} />
+              <ViewField
+                label="Cloudinary path"
+                value={viewItem.cloudinaryPath}
+              />
+            </div>
           </div>
         ) : isFormOpen ? (
-          <form
-            id="image-form"
-            onSubmit={onSubmit}
-            className="grid gap-6 lg:grid-cols-2"
-          >
-            <div className="flex flex-col gap-4">
+          <form id="image-form" onSubmit={onSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className={labelClass}>
+                {isShowreel ? "Showreel video" : "Section image"}
+              </label>
+              <CloudinaryUpload
+                folder="devmalitos"
+                publicId={key}
+                value={cloudinaryPath}
+                resourceType={isShowreel ? "video" : "image"}
+                label={
+                  isShowreel ? "Upload MP4 to Cloudinary" : "Upload to Cloudinary"
+                }
+                onUploaded={(publicId) => setCloudinaryPath(publicId)}
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className={labelClass}>Section</label>
+                <select
+                  className={inputClass}
+                  value={isPresetKey ? key : "custom"}
+                  onChange={(e) => {
+                    if (e.target.value !== "custom") onPreset(e.target.value);
+                  }}
+                >
+                  {SECTION_PRESETS.map((preset) => (
+                    <option key={preset.key} value={preset.key}>
+                      {preset.label}
+                    </option>
+                  ))}
+                  {!isPresetKey && <option value="custom">Custom</option>}
+                </select>
+              </div>
               <div>
                 <label className={labelClass}>Section key</label>
                 <input
@@ -230,52 +258,31 @@ export default function ImagesPanel() {
                   required
                 />
               </div>
-              <div>
-                <label className={labelClass}>
-                  {isShowreel ? "Showreel video" : "Section image"}
-                </label>
-                <CloudinaryUpload
-                  folder="devmalitos"
-                  publicId={key}
-                  value={cloudinaryPath}
-                  resourceType={isShowreel ? "video" : "image"}
-                  label={
-                    isShowreel
-                      ? "Upload MP4 to Cloudinary"
-                      : "Upload to Cloudinary"
-                  }
-                  onUploaded={(publicId) => setCloudinaryPath(publicId)}
-                />
-                <input
-                  className={`${inputClass} mt-3`}
-                  value={cloudinaryPath}
-                  onChange={(e) => setCloudinaryPath(e.target.value)}
-                  placeholder="devmalitos/hero"
-                  required
-                />
-              </div>
-              {error && <p className="text-xs text-red-400">{error}</p>}
             </div>
             <div>
-              <p className={labelClass}>Preview</p>
-              {isShowreel ? (
-                <video
-                  src={cloudinaryVideoUrl(cloudinaryPath)}
-                  controls
-                  className="mt-2 max-h-64 w-full rounded-xl border border-cream/10 object-cover"
-                />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={cloudinaryUrl(cloudinaryPath, { width: 800 })}
-                  alt={label}
-                  className="mt-2 max-h-64 w-full rounded-xl border border-cream/10 object-cover"
-                />
-              )}
+              <label className={labelClass}>Cloudinary path</label>
+              <input
+                className={inputClass}
+                value={cloudinaryPath}
+                onChange={(e) => setCloudinaryPath(e.target.value)}
+                placeholder="devmalitos/hero"
+                required
+              />
             </div>
+            {error && <p className="text-xs text-red-400">{error}</p>}
           </form>
         ) : null}
       </AdminModal>
+
+      <AdminDeleteConfirmModal
+        open={deleteTarget !== null}
+        entityName="site image"
+        targetLabel={deleteTarget?.label ?? ""}
+        detail={deleteTarget?.cloudinaryPath}
+        deleting={deleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void confirmDelete()}
+      />
 
       <div className={adminGridClass}>
         {images.map((img) => {
@@ -292,7 +299,7 @@ export default function ImagesPanel() {
                     muted
                     playsInline
                     preload="metadata"
-                    className="h-36 w-full bg-ink object-cover"
+                    className="h-36 w-full bg-charcoal object-cover"
                   />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -305,7 +312,7 @@ export default function ImagesPanel() {
               }
               onView={() => openView(img)}
               onEdit={() => openEdit(img)}
-              onDelete={() => void remove({ tokenHash, imageId: img._id })}
+              onDelete={() => setDeleteTarget(img)}
             />
           );
         })}

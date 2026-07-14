@@ -110,7 +110,7 @@ export default function FaqPanel() {
               ? "Edit FAQ"
               : "FAQ details"
         }
-        size="lg"
+        size="md"
         footer={
           modalMode === "view" ? (
             <>
