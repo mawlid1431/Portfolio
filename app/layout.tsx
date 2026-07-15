@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Viewport } from "next";
 import { Anton, Manrope } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -6,6 +6,7 @@ import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import Grain from "@/components/Grain";
 import Navbar from "@/components/Navbar";
+import { rootMetadata } from "@/lib/site-metadata";
 
 const anton = Anton({
   weight: "400",
@@ -18,11 +19,7 @@ const manrope = Manrope({
   variable: "--font-body",
 });
 
-export const metadata: Metadata = {
-  title: "Mowlid Haibe — Software Engineer & AI Innovator",
-  description:
-    "Full-stack software engineer building scalable web applications for startups, nonprofits, and community-driven organizations.",
-};
+export const metadata = rootMetadata;
 
 export const viewport: Viewport = {
   width: "device-width",

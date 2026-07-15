@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 
-export const metadata = { title: "Terms of Service — Mowlid Haibe" };
+export const metadata = { title: "Terms of Service" };
 
 export default function TermsPage() {
   return (

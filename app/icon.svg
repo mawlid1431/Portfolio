@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" role="img" aria-label="Malitos">
+  <rect width="32" height="32" rx="8" fill="#070707"/>
+  <path
+    fill="#f2ecdf"
+    d="M7 9h3.4l3.1 6.8L16.6 9H20v14h-3.1v-9.3l-3.1 6.7h-1.2l-3.1-6.7V23H7V9z"
+  />
+  <circle cx="24.5" cy="23.5" r="2.75" fill="#34d399"/>
+</svg>

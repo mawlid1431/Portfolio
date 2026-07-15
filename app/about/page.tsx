@@ -14,7 +14,7 @@ import { glassButtonClasses } from "@/lib/glass-button-classes";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
-  title: "About — Mowlid Haibe",
+  title: "About",
   description:
     "Software Engineer and AI Innovator from Somaliland, based in Malaysia. 30+ live projects in production.",
 };

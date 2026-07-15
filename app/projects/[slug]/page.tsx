@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: "Project not found" };
 
   return {
-    title: `${data.project.title} — Mowlid Haibe`,
+    title: data.project.title,
     description: data.project.pitch,
   };
 }

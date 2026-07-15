@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none" role="img" aria-label="Malitos">
+  <rect width="180" height="180" rx="40" fill="#070707"/>
+  <path
+    fill="#f2ecdf"
+    d="M42 48h18l16 38 16-38h18v84h-16V78l-16 38h-6l-16-38v54H42V48z"
+  />
+  <circle cx="138" cy="132" r="16" fill="#34d399"/>
+</svg>

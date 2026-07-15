@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 
-export const metadata = { title: "Privacy Policy — Mowlid Haibe" };
+export const metadata = { title: "Privacy Policy" };
 
 export default function PrivacyPage() {
   return (

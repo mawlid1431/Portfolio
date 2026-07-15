@@ -6,7 +6,7 @@ import Reveal from "@/components/Reveal";
 import { fetchPublicProjects } from "@/lib/projects-server";
 
 export const metadata: Metadata = {
-  title: "Projects — Mowlid Haibe",
+  title: "Projects",
   description:
     "Successful projects: platforms for communities, fintech, nonprofits, events and more.",
 };
