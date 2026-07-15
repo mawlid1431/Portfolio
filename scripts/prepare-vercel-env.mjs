@@ -15,7 +15,7 @@ const sourcePath = resolve(root, ".env.local");
 const outputPath = resolve(root, ".env.vercel.import");
 
 const PROD_CONVEX_URL = "https://mellow-camel-842.eu-west-1.convex.cloud";
-const PROD_SITE_URL = "https://malitos.dev";
+const PROD_SITE_URL = "https://malitos.tech";
 
 /** Local-only — must not go to Vercel. */
 const SKIP_KEYS = new Set([

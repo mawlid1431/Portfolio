@@ -6,9 +6,10 @@ import Reveal from "@/components/Reveal";
 import { fetchPublicProjects } from "@/lib/projects-server";
 
 export const metadata: Metadata = {
-  title: "Projects",
+  title: "Projects by Mowlid Haibe",
   description:
-    "Successful projects: platforms for communities, fintech, nonprofits, events and more.",
+    "Devmalitos portfolio — web development projects by Mowlid Haibe (Malitos): nonprofits, fintech, startups, and community platforms built with Next.js and React.",
+  alternates: { canonical: "/projects" },
 };
 
 export const revalidate = 60;

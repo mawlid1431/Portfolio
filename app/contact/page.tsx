@@ -8,9 +8,10 @@ import { fetchPublicSocials } from "@/lib/cms-server";
 import { fetchSiteImageMap, resolveSiteImage } from "@/lib/images-server";
 
 export const metadata: Metadata = {
-  title: "Get in touch",
+  title: "Hire Mowlid Haibe — Get in touch",
   description:
-    "Let's create something amazing together. Reach out and let's start building your vision.",
+    "Contact Mowlid Haibe (Malitos · Devmalitos) for web development, full-stack apps, and AI solutions. Based in Malaysia, working with clients worldwide.",
+  alternates: { canonical: "/contact" },
 };
 
 export const revalidate = 60;

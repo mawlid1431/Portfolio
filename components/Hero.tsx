@@ -95,8 +95,7 @@ export default function Hero({ heroSrc = IMAGES.hero }: { heroSrc?: string }) {
           className="absolute bottom-[16%] z-20 max-w-xl px-6 text-center text-sm uppercase tracking-[0.3em] text-cream-dim md:text-base"
           style={{ opacity: subtitleOpacity }}
         >
-          Software Engineer & AI Innovator — I help brands stand out in the
-          digital world
+          Software Engineer &amp; AI Innovator — Malitos · Devmalitos portfolio
         </p>
 
         {/* scroll cue */}

@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import Hero from "@/components/Hero";
+import SeoIntro from "@/components/SeoIntro";
+import JsonLd from "@/components/JsonLd";
 import Stats from "@/components/Stats";
 import Pillars from "@/components/Pillars";
 import Work from "@/components/Work";
@@ -10,6 +13,14 @@ import Footer from "@/components/Footer";
 import { fetchSiteImageMap, resolveSiteImage } from "@/lib/images-server";
 import { fetchPublicFaqs } from "@/lib/cms-server";
 import { fetchPublicProjects } from "@/lib/projects-server";
+import { buildFaqStructuredData } from "@/lib/seo-structured-data";
+import { defaultDescription } from "@/lib/site-metadata";
+
+export const metadata: Metadata = {
+  title: "Mowlid Haibe — Malitos · Devmalitos Portfolio",
+  description: defaultDescription,
+  alternates: { canonical: "/" },
+};
 
 export const revalidate = 60;
 
@@ -21,10 +32,13 @@ export default async function Home() {
   ]);
 
   const featured = projects.filter((p) => p.featured).slice(0, 3);
+  const faqStructuredData = buildFaqStructuredData(faqs);
 
   return (
     <main>
+      <JsonLd data={faqStructuredData} />
       <Hero heroSrc={resolveSiteImage(images, "hero", 1400)} />
+      <SeoIntro />
       <Stats />
       <Pillars workingSrc={resolveSiteImage(images, "working", 1400)} />
       <Work

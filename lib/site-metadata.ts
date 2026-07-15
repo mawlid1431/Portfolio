@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { SITE } from "./data";
+import { PROFILE_URLS } from "./seo-structured-data";
 
-const defaultDescription =
-  "Full-stack software engineer building scalable web applications for startups, nonprofits, and community-driven organizations.";
+export const defaultDescription =
+  "Mowlid Haibe (Malitos · Devmalitos) — full-stack software engineer & AI innovator in Malaysia. Next.js, React, and TypeScript developer for startups, nonprofits, and portfolio websites.";
 
 const seoKeywords = [
   "Mowlid Haibe",
@@ -30,7 +31,7 @@ export function getSiteUrl() {
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (raw) return raw.replace(/\/$/, "");
   return process.env.NODE_ENV === "production"
-    ? "https://malitos.dev"
+    ? "https://malitos.tech"
     : "http://localhost:3000";
 }
 
@@ -87,10 +88,11 @@ export function getStructuredData(): Record<string, unknown> {
         "@type": "Person",
         "@id": `${siteUrl}/#person`,
         name: SITE.name,
-        alternateName: ["Mowlid", SITE.alias, "Devmalitos"],
+        alternateName: ["Mowlid", SITE.alias, "Devmalitos", "Mowlid Mohamoud Haibe"],
         jobTitle: SITE.role,
         email: SITE.email,
         url: siteUrl,
+        sameAs: [...PROFILE_URLS],
         address: {
           "@type": "PostalAddress",
           addressCountry: SITE.location,

@@ -12,6 +12,9 @@ export default async function Footer() {
             MALITOS<span className="text-emerald-bright">.</span>
           </p>
           <p className="mt-1 text-xs text-cream-dim">
+            Mowlid Haibe · Malitos · Devmalitos — full-stack developer, Malaysia
+          </p>
+          <p className="mt-1 text-xs text-cream-dim">
             © {new Date().getFullYear()} Mowlid Haibe. All rights reserved.
           </p>
         </div>

@@ -14,9 +14,10 @@ import { glassButtonClasses } from "@/lib/glass-button-classes";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About Mowlid Haibe",
   description:
-    "Software Engineer and AI Innovator from Somaliland, based in Malaysia. 30+ live projects in production.",
+    "About Mowlid Haibe (Malitos · Devmalitos) — Somaliland-born full-stack software engineer and AI innovator based in Malaysia. 30+ live projects in production.",
+  alternates: { canonical: "/about" },
 };
 
 export const revalidate = 60;
@@ -41,7 +42,7 @@ export default async function AboutPage() {
             👋 Hi, I&apos;m Mowlid Haibe
           </p>
           <h1 className="font-display mt-4 max-w-4xl text-5xl uppercase leading-none md:text-8xl">
-            Software that serves{" "}
+            Mowlid Haibe — software that serves{" "}
             <span className="text-emerald-bright">people</span>
           </h1>
         </Reveal>
