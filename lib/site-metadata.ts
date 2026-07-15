@@ -1,31 +1,14 @@
 import type { Metadata } from "next";
 import { SITE } from "./data";
+import {
+  allSeoKeywords,
+  seoAboutDescription,
+  seoLongDescription,
+  seoProjectsDescription,
+} from "./seo-keywords";
 import { PROFILE_URLS } from "./seo-structured-data";
 
-export const defaultDescription =
-  "Mowlid Haibe (Malitos · Devmalitos) — full-stack software engineer & AI innovator in Malaysia. Next.js, React, and TypeScript developer for startups, nonprofits, and portfolio websites.";
-
-const seoKeywords = [
-  "Mowlid Haibe",
-  "Mowlid",
-  "Malitos",
-  "Devmalitos",
-  "Mowlid portfolio",
-  "Mowlid Haibe portfolio",
-  "Malitos developer",
-  "Devmalitos portfolio",
-  "software engineer Malaysia",
-  "Somaliland software engineer",
-  "full-stack developer",
-  "web developer",
-  "AI innovator",
-  "Next.js developer",
-  "React developer",
-  "portfolio website developer",
-  "startup web development",
-  "nonprofit web development",
-  "custom website development",
-];
+export const defaultDescription = seoLongDescription;
 
 export function getSiteUrl() {
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
@@ -46,7 +29,7 @@ export const rootMetadata: Metadata = {
   authors: [{ name: SITE.name, url: getSiteUrl() }],
   creator: SITE.name,
   publisher: SITE.alias,
-  keywords: seoKeywords,
+  keywords: [...allSeoKeywords],
   alternates: {
     canonical: "/",
   },
@@ -78,9 +61,10 @@ export const rootMetadata: Metadata = {
   },
 };
 
+export { seoAboutDescription, seoLongDescription, seoProjectsDescription };
+
 export function getStructuredData(): Record<string, unknown> {
   const siteUrl = getSiteUrl();
-
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -98,14 +82,26 @@ export function getStructuredData(): Record<string, unknown> {
           addressCountry: SITE.location,
         },
         knowsAbout: [
-          "Full-stack web development",
-          "AI integration",
+          "AI web applications",
+          "AI agent development",
+          "OpenAI integration",
+          "Claude AI integration",
           "Next.js",
           "React",
           "TypeScript",
-          "Portfolio websites",
-          "Startup websites",
-          "Nonprofit websites",
+          "React Native",
+          "Expo",
+          "Convex",
+          "Nonprofit website development",
+          "Charity website design",
+          "Fintech web applications",
+          "Travel booking platforms",
+          "Community platforms",
+          "Education platforms",
+          "CRM development",
+          "Stripe payment integration",
+          "Full-stack web development",
+          "Mobile app development",
         ],
       },
       {
@@ -130,10 +126,16 @@ export function getStructuredData(): Record<string, unknown> {
         },
         areaServed: "Worldwide",
         serviceType: [
-          "Web development",
+          "AI web application development",
+          "AI agent and CRM development",
+          "Nonprofit and charity website design",
+          "Fintech and billing system development",
+          "Travel and booking platform development",
+          "Community and education platform development",
           "Full-stack software engineering",
-          "AI application development",
-          "Portfolio website design",
+          "React Native mobile app development",
+          "Portfolio and startup website design",
+          "Website maintenance and SEO optimization",
         ],
       },
     ],

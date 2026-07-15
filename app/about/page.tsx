@@ -12,11 +12,11 @@ import {
 import { fetchSiteImageMap, resolveSiteImage, resolveSiteVideo } from "@/lib/images-server";
 import { glassButtonClasses } from "@/lib/glass-button-classes";
 import { cn } from "@/lib/cn";
+import { seoAboutDescription } from "@/lib/seo-keywords";
 
 export const metadata: Metadata = {
   title: "About Mowlid Haibe",
-  description:
-    "About Mowlid Haibe (Malitos · Devmalitos) — Somaliland-born full-stack software engineer and AI innovator based in Malaysia. 30+ live projects in production.",
+  description: seoAboutDescription,
   alternates: { canonical: "/about" },
 };
 
@@ -252,6 +252,28 @@ export default async function AboutPage() {
         </div>
       </section>
       )}
+
+      {/* experience keywords for search */}
+      <section
+        aria-label="Experience and certifications"
+        className="border-t border-emerald-glow/10 bg-ink-soft/20 py-14"
+      >
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <p className="text-xs uppercase tracking-[0.35em] text-emerald-bright">
+            Experience
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-cream-dim md:text-base">
+            Software engineer at <strong className="text-cream">BuildSom</strong>,
+            digital media lead for <strong className="text-cream">Africa Science Week</strong>
+            across 11 countries, community manager at{" "}
+            <strong className="text-cream">BarkulanHub</strong>, and trainer at Mansa Musa
+            Start School. ALX Africa, IBM Full Stack, Google Project Management, and
+            FikrCamp graduate — building AI apps, fintech systems, nonprofit websites,
+            and community platforms as <strong className="text-cream">Malitos</strong> /{" "}
+            <strong className="text-cream">Devmalitos</strong>.
+          </p>
+        </div>
+      </section>
 
       {/* cta */}
       <section className="border-t border-cream/10 py-24 text-center">

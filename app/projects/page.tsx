@@ -4,11 +4,11 @@ import GlassButton from "@/components/GlassButton";
 import ProjectCard from "@/components/ProjectCard";
 import Reveal from "@/components/Reveal";
 import { fetchPublicProjects } from "@/lib/projects-server";
+import { seoProjectsDescription } from "@/lib/seo-keywords";
 
 export const metadata: Metadata = {
   title: "Projects by Mowlid Haibe",
-  description:
-    "Devmalitos portfolio — web development projects by Mowlid Haibe (Malitos): nonprofits, fintech, startups, and community platforms built with Next.js and React.",
+  description: seoProjectsDescription,
   alternates: { canonical: "/projects" },
 };
 
@@ -25,11 +25,13 @@ export default async function ProjectsPage() {
             Successful projects
           </p>
           <h1 className="font-display mt-4 text-5xl uppercase leading-none md:text-8xl">
-            Work that <span className="text-emerald-bright">ships</span>
+            Devmalitos <span className="text-emerald-bright">projects</span>
           </h1>
-          <p className="mt-6 max-w-xl text-sm text-cream-dim md:text-base">
-            A selection of live products — platforms for communities, fintech,
-            nonprofits, travel, events and creative arts.
+          <p className="mt-6 max-w-2xl text-sm text-cream-dim md:text-base">
+            Portfolio by Mowlid Haibe (Malitos): AI apps like CallBack AI &amp; Pure
+            CRM, nonprofit sites like Mubarak Charity, fintech with BarkulanFintech,
+            travel platforms like SkyDanubia, community apps, education platforms, and
+            30+ live products built with Next.js, React, and TypeScript.
           </p>
         </Reveal>
 

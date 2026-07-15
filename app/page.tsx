@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Hero from "@/components/Hero";
 import SeoIntro from "@/components/SeoIntro";
+import SeoExpertise from "@/components/SeoExpertise";
 import JsonLd from "@/components/JsonLd";
 import Stats from "@/components/Stats";
 import Pillars from "@/components/Pillars";
@@ -14,11 +15,11 @@ import { fetchSiteImageMap, resolveSiteImage } from "@/lib/images-server";
 import { fetchPublicFaqs } from "@/lib/cms-server";
 import { fetchPublicProjects } from "@/lib/projects-server";
 import { buildFaqStructuredData } from "@/lib/seo-structured-data";
-import { defaultDescription } from "@/lib/site-metadata";
+import { seoLongDescription } from "@/lib/site-metadata";
 
 export const metadata: Metadata = {
   title: "Mowlid Haibe — Malitos · Devmalitos Portfolio",
-  description: defaultDescription,
+  description: seoLongDescription,
   alternates: { canonical: "/" },
 };
 
@@ -39,6 +40,7 @@ export default async function Home() {
       <JsonLd data={faqStructuredData} />
       <Hero heroSrc={resolveSiteImage(images, "hero", 1400)} />
       <SeoIntro />
+      <SeoExpertise />
       <Stats />
       <Pillars workingSrc={resolveSiteImage(images, "working", 1400)} />
       <Work

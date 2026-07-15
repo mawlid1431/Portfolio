@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { seoLongDescription } from "@/lib/seo-keywords";
 
 /** Visible crawlable copy — Google ranks page text, not meta keywords alone. */
 export default function SeoIntro() {
@@ -14,14 +15,8 @@ export default function SeoIntro() {
         <h2 className="font-display mt-3 text-2xl uppercase leading-tight md:text-4xl">
           Mowlid Haibe — Full-stack developer &amp; AI innovator
         </h2>
-        <p className="mt-5 text-sm leading-relaxed text-cream-dim md:text-base">
-          I&apos;m <strong className="font-medium text-cream">Mowlid Haibe</strong>, a
-          software engineer from Somaliland based in Malaysia. Under{" "}
-          <strong className="font-medium text-cream">Malitos</strong> and{" "}
-          <strong className="font-medium text-cream">Devmalitos</strong>, I build
-          production-ready websites and web apps with Next.js, React, TypeScript, and
-          AI — for startups, nonprofits, and founders who need a developer they can
-          trust.
+        <p className="mt-4 text-sm leading-relaxed text-cream-dim md:text-base">
+          {seoLongDescription}
         </p>
         <p className="mt-4 text-sm leading-relaxed text-cream-dim md:text-base">
           Explore my{" "}
