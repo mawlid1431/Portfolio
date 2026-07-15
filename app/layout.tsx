@@ -6,7 +6,7 @@ import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import Grain from "@/components/Grain";
 import Navbar from "@/components/Navbar";
-import { rootMetadata } from "@/lib/site-metadata";
+import { getStructuredData, rootMetadata } from "@/lib/site-metadata";
 
 const anton = Anton({
   weight: "400",
@@ -37,6 +37,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const structuredData = getStructuredData();
   return (
     <html
       lang="en"
@@ -49,6 +50,13 @@ export default async function RootLayout({
           // apply saved theme before first paint to avoid a flash
           dangerouslySetInnerHTML={{
             __html: `try{if(localStorage.getItem("theme")==="light")document.documentElement.classList.add("light")}catch(e){}`,
+          }}
+        />
+        <script
+          nonce={nonce}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
           }}
         />
       </head>
