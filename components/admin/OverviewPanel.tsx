@@ -2,11 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { AdminTab } from "@/lib/admin-nav";
 import {
-  btnGhost,
   btnPrimary,
   formatDate,
   useAdminTokenHash,
@@ -98,7 +97,6 @@ export default function OverviewPanel({
 }: OverviewPanelProps) {
   const tokenHash = useAdminTokenHash();
   const [period, setPeriod] = useState<Period>("week");
-  const [importing, setImporting] = useState(false);
 
   const stats = useQuery(
     api.dashboard.overview,
@@ -112,7 +110,6 @@ export default function OverviewPanel({
     api.projects.list,
     tokenHash ? { tokenHash } : "skip",
   );
-  const importDefaults = useMutation(api.dashboard.importDefaults);
 
   const activity = useMemo(() => {
     const messageTimes = (messages ?? []).map((m) => m.createdAt);
@@ -184,15 +181,6 @@ export default function OverviewPanel({
     },
   ];
 
-  const onImport = async () => {
-    setImporting(true);
-    try {
-      await importDefaults({ tokenHash });
-    } finally {
-      setImporting(false);
-    }
-  };
-
   return (
     <div className="space-y-8">
       <motion.div
@@ -213,16 +201,6 @@ export default function OverviewPanel({
       <AdminSectionPanel
         title="Quick manage"
         description="Visual summary of your portfolio content and visitor messages."
-        actions={
-          <button
-            type="button"
-            className={btnGhost}
-            disabled={importing}
-            onClick={() => void onImport()}
-          >
-            {importing ? "Importing…" : "Import defaults"}
-          </button>
-        }
       >
         <div className="space-y-4">
           <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center sm:justify-between">
