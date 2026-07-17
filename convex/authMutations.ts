@@ -1,9 +1,10 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
 import { checkRateLimit } from "./lib/rateLimit";
-import { parseDeviceLabel } from "./lib/session";
+import { getSessionByToken, parseDeviceLabel } from "./lib/session";
 
-const SESSION_DAYS = 14;
+/** Hard ceiling even if the browser keeps a restored session cookie. */
+const SESSION_ABSOLUTE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
  * Length-independent constant-time string comparison. The Convex default
@@ -55,7 +56,7 @@ export const createSession = internalMutation({
       ipHash: args.ipHash,
       createdAt: now,
       lastActiveAt: now,
-      expiresAt: now + SESSION_DAYS * 24 * 60 * 60 * 1000,
+      expiresAt: now + SESSION_ABSOLUTE_MS,
     });
 
     return {
@@ -76,17 +77,13 @@ export const getSessionAdmin = internalQuery({
     v.null(),
   ),
   handler: async (ctx, args) => {
-    const session = await ctx.db
-      .query("sessions")
-      .withIndex("by_token", (q) => q.eq("tokenHash", args.tokenHash))
-      .unique();
+    const result = await getSessionByToken(ctx, args.tokenHash);
+    if (!result) return null;
 
-    if (!session || session.expiresAt < Date.now()) return null;
-
-    const admin = await ctx.db.get("admins", session.adminId);
-    if (!admin) return null;
-
-    return { adminId: admin._id, passwordHash: admin.passwordHash };
+    return {
+      adminId: result.admin._id,
+      passwordHash: result.admin.passwordHash,
+    };
   },
 });
 

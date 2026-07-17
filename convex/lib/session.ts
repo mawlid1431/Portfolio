@@ -3,7 +3,7 @@ import type { Doc } from "../_generated/dataModel";
 
 /** Idle timeout: a session unused for this long is treated as expired even if
  * its absolute expiry hasn't passed. */
-const IDLE_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+export const IDLE_TIMEOUT_MS = 60 * 60 * 1000; // 1 hour
 
 export async function getSessionByToken(
   ctx: QueryCtx | MutationCtx,

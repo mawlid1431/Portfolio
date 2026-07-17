@@ -9,7 +9,8 @@ export async function GET() {
   }
 
   const client = getConvexClient();
-  const admin = await client.query(api.auth.me, { tokenHash });
+  // Mutation so lastActiveAt advances while the admin is actually using the UI.
+  const admin = await client.mutation(api.auth.touchAndMe, { tokenHash });
 
   if (!admin) {
     return NextResponse.json({ admin: null }, { status: 401 });

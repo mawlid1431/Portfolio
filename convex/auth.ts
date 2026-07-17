@@ -45,6 +45,33 @@ export const me = query({
   },
 });
 
+/** Same as `me`, but refreshes lastActiveAt (for idle-timeout accounting). */
+export const touchAndMe = mutation({
+  args: { tokenHash: v.string() },
+  returns: v.union(
+    v.object({
+      adminId: v.id("admins"),
+      email: v.string(),
+      name: v.string(),
+      sessionId: v.id("sessions"),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, args) => {
+    try {
+      const { session, admin } = await requireSession(ctx, args.tokenHash);
+      return {
+        adminId: admin._id,
+        email: admin.email,
+        name: admin.name,
+        sessionId: session._id,
+      };
+    } catch {
+      return null;
+    }
+  },
+});
+
 export const updateProfile = mutation({
   args: { tokenHash: v.string(), name: v.string() },
   returns: v.null(),

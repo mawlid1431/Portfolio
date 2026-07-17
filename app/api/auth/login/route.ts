@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import {
   SESSION_COOKIE,
-  SESSION_MAX_AGE,
   generateToken,
   getClientIp,
   hashValue,
@@ -43,13 +42,13 @@ export async function POST(request: Request) {
     });
 
     const cookieStore = await cookies();
+    // Session cookie: no maxAge/expires — cleared when the browser closes.
     cookieStore.set(SESSION_COOKIE, rawToken, {
       httpOnly: true,
       // Always Secure in production (required by the __Host- prefix); off in
       // dev so http://localhost login still works.
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: SESSION_MAX_AGE,
       path: "/",
     });
 

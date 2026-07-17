@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto";
 
-export { SESSION_COOKIE, SESSION_MAX_AGE } from "./session-cookie";
+export { SESSION_COOKIE } from "./session-cookie";
 
 export function generateToken(): string {
   return randomBytes(32).toString("hex");

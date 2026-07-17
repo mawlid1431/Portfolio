@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { adminButtonClass } from "@/components/admin/AdminButton";
 
 type AdminSession = {
@@ -15,9 +15,13 @@ type MeResponse = {
   tokenHash?: string;
 };
 
+/** How often real UI activity may refresh lastActiveAt (keeps idle clock honest). */
+const ACTIVITY_TOUCH_MS = 5 * 60 * 1000;
+
 export function useAdminSession() {
   const [data, setData] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastTouchAt = useRef(0);
 
   const refresh = useCallback(async () => {
     try {
@@ -28,6 +32,7 @@ export function useAdminSession() {
       }
       const body = (await res.json()) as MeResponse;
       setData(body);
+      lastTouchAt.current = Date.now();
     } catch {
       setData({ admin: null });
     } finally {
@@ -41,6 +46,26 @@ export function useAdminSession() {
     });
     task();
   }, [refresh]);
+
+  // Extend session only when the admin is actively using the page — not via a
+  // blind poll that would keep an idle tab signed in forever.
+  useEffect(() => {
+    if (!data?.admin) return;
+
+    const onActivity = () => {
+      const now = Date.now();
+      if (now - lastTouchAt.current < ACTIVITY_TOUCH_MS) return;
+      lastTouchAt.current = now;
+      void refresh();
+    };
+
+    window.addEventListener("pointerdown", onActivity);
+    window.addEventListener("keydown", onActivity);
+    return () => {
+      window.removeEventListener("pointerdown", onActivity);
+      window.removeEventListener("keydown", onActivity);
+    };
+  }, [data?.admin, refresh]);
 
   return {
     admin: data?.admin ?? null,
