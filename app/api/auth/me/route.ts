@@ -8,13 +8,18 @@ export async function GET() {
     return NextResponse.json({ admin: null }, { status: 401 });
   }
 
-  const client = getConvexClient();
-  // Mutation so lastActiveAt advances while the admin is actually using the UI.
-  const admin = await client.mutation(api.auth.touchAndMe, { tokenHash });
+  try {
+    const client = getConvexClient();
+    // Mutation so lastActiveAt advances while the admin is actually using the UI.
+    const admin = await client.mutation(api.auth.touchAndMe, { tokenHash });
 
-  if (!admin) {
+    if (!admin) {
+      return NextResponse.json({ admin: null }, { status: 401 });
+    }
+
+    return NextResponse.json({ admin, tokenHash });
+  } catch (error) {
+    console.error("auth/me error:", error);
     return NextResponse.json({ admin: null }, { status: 401 });
   }
-
-  return NextResponse.json({ admin, tokenHash });
 }
