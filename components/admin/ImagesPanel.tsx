@@ -167,6 +167,10 @@ export default function ImagesPanel() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!tokenHash) return;
+    if (!cloudinaryPath.trim()) {
+      setError("Upload an image or video first.");
+      return;
+    }
     setError("");
     try {
       await upsert({ tokenHash, key, label, cloudinaryPath });
@@ -245,9 +249,6 @@ export default function ImagesPanel() {
                     <h3 className="line-clamp-2 font-semibold text-[var(--admin-text)]">
                       {img.label}
                     </h3>
-                    <p className="mt-1 break-all text-xs text-[var(--admin-text-faint)]">
-                      {img.cloudinaryPath}
-                    </p>
                     <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
                       <AdminRowActions
                         onView={() => openView(img)}
@@ -304,9 +305,6 @@ export default function ImagesPanel() {
                 <h3 className="line-clamp-2 font-semibold text-[var(--admin-text)]">
                   {img.label}
                 </h3>
-                <p className="mt-1 break-all text-xs text-[var(--admin-text-faint)]">
-                  {img.cloudinaryPath}
-                </p>
                 <div className="mt-4 border-t border-[var(--border-subtle)] pt-4">
                   <AdminRowActions
                     onView={() => openView(img)}
@@ -378,13 +376,9 @@ export default function ImagesPanel() {
               )}
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <ViewField label="Section key" value={viewItem.key} />
               <ViewField label="Label" value={viewItem.label} />
-              <ViewField
-                label="Cloudinary path"
-                value={viewItem.cloudinaryPath}
-              />
             </div>
           </div>
         ) : modalMode === "form" ? (
@@ -410,26 +404,14 @@ export default function ImagesPanel() {
                 onUploaded={(publicId) => setCloudinaryPath(publicId)}
               />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClass}>Label</label>
-                <input
-                  className={inputClass}
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className={labelClass}>Cloudinary path</label>
-                <input
-                  className={inputClass}
-                  value={cloudinaryPath}
-                  onChange={(e) => setCloudinaryPath(e.target.value)}
-                  placeholder="devmalitos/hero"
-                  required
-                />
-              </div>
+            <div>
+              <label className={labelClass}>Label</label>
+              <input
+                className={inputClass}
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                required
+              />
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
           </form>

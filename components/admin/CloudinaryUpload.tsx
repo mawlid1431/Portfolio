@@ -224,7 +224,18 @@ export default function CloudinaryUpload({
       };
 
       if (!uploadRes.ok || !body.public_id || !body.secure_url) {
-        throw new Error(body.error?.message ?? "Upload failed");
+        const raw = body.error?.message ?? "Upload failed";
+        if (/missing permissions|actions=\["create"\]/i.test(raw)) {
+          throw new Error(
+            "Cloudinary API key cannot upload. In Cloudinary → Settings → API Keys, give this key upload/create permission (or use the root API key).",
+          );
+        }
+        if (/invalid api_key/i.test(raw)) {
+          throw new Error(
+            "Cloudinary rejected the API key. Check cloud name, API key, and secret match in Vercel env vars.",
+          );
+        }
+        throw new Error(raw);
       }
 
       setPreview(body.public_id);
@@ -323,11 +334,6 @@ export default function CloudinaryUpload({
         >
           Choose from uploaded
         </button>
-        {displayPath && (
-          <code className="break-all text-xs text-secondary">
-            {displayPath}
-          </code>
-        )}
       </div>
 
       {pickerOpen && (
