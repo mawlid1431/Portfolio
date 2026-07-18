@@ -3,7 +3,11 @@
 import { FormEvent, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { cloudinaryUrl, cloudinaryVideoUrl } from "@/lib/cloudinary";
+import {
+  cloudinaryUrl,
+  cloudinaryVideoUrl,
+  normalizeCloudinaryPath,
+} from "@/lib/cloudinary";
 import AdminModal from "./AdminModal";
 import AdminButton from "./AdminButton";
 import AdminDeleteConfirmModal from "./AdminDeleteConfirmModal";
@@ -149,7 +153,9 @@ export default function ImagesPanel() {
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            publicId: deleteTarget.cloudinaryPath,
+            // Stored value may be a full versioned URL — the delete API expects
+            // a bare public_id, so normalize it back down first.
+            publicId: normalizeCloudinaryPath(deleteTarget.cloudinaryPath),
             resourceType:
               deleteTarget.key === "about-showreel" ? "video" : "image",
           }),
@@ -401,7 +407,7 @@ export default function ImagesPanel() {
                     ? "Upload MP4 to Cloudinary"
                     : "Upload to Cloudinary"
                 }
-                onUploaded={(publicId) => setCloudinaryPath(publicId)}
+                onUploaded={(_publicId, url) => setCloudinaryPath(url)}
               />
             </div>
             <div>

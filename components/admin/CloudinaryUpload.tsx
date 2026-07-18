@@ -155,7 +155,7 @@ export default function CloudinaryUpload({
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const onLibrarySelect = (asset: LibraryAsset) => {
-    setPreview(asset.publicId);
+    setPreview(asset.url);
     setPreviewBroken(false);
     setPickerOpen(false);
     onUploaded(asset.publicId, asset.url);
@@ -211,6 +211,9 @@ export default function CloudinaryUpload({
       form.append("signature", sign.signature);
       form.append("folder", sign.folder ?? folder);
       form.append("overwrite", "true");
+      // Purge the previous asset from Cloudinary's CDN so a replacement at the
+      // same public_id doesn't keep serving the old cached file.
+      form.append("invalidate", "true");
       if (sign.publicId) form.append("public_id", sign.publicId);
 
       const uploadRes = await fetch(
@@ -238,7 +241,9 @@ export default function CloudinaryUpload({
         throw new Error(raw);
       }
 
-      setPreview(body.public_id);
+      // Keep the versioned secure_url so the preview (and the stored value)
+      // point at the freshly uploaded file, not a cached older version.
+      setPreview(body.secure_url);
       setPreviewBroken(false);
       onUploaded(body.public_id, body.secure_url);
     } catch (err) {

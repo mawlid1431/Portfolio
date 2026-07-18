@@ -50,11 +50,14 @@ export async function POST(request: Request) {
     }
     const timestamp = Math.round(Date.now() / 1000);
 
-    // Sign only the params we send to Cloudinary (string overwrite matches FormData).
+    // Sign only the params we send to Cloudinary (string values match FormData).
+    // `invalidate` purges the CDN cache when overwriting an existing public_id,
+    // so replaced media doesn't keep serving the stale cached file.
     const paramsToSign: Record<string, string | number> = {
       timestamp,
       folder,
       overwrite: "true",
+      invalidate: "true",
     };
     if (publicId) paramsToSign.public_id = publicId;
 
