@@ -109,20 +109,24 @@ export default function ScrollZoomReveal({
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // The video auto-plays muted in the background (browsers block autoplay with
+  // sound). The button drives the *sound* state: one click unmutes and plays,
+  // the next pauses. Keying off `playing` rather than `video.paused` avoids the
+  // "first click just pauses the muted video" bug.
   const togglePlay = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (video.paused) {
-      void video.play();
-      video.muted = false;
-      setPlaying(true);
-    } else {
+    if (playing) {
       video.pause();
-      video.muted = true;
       setPlaying(false);
+    } else {
+      video.muted = false;
+      video.volume = 1;
+      void video.play();
+      setPlaying(true);
     }
-  }, []);
+  }, [playing]);
 
   useEffect(() => {
     const video = videoRef.current;
