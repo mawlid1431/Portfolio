@@ -211,9 +211,6 @@ export default function CloudinaryUpload({
       form.append("signature", sign.signature);
       form.append("folder", sign.folder ?? folder);
       form.append("overwrite", "true");
-      // Purge the previous asset from Cloudinary's CDN so a replacement at the
-      // same public_id doesn't keep serving the old cached file.
-      form.append("invalidate", "true");
       if (sign.publicId) form.append("public_id", sign.publicId);
 
       const uploadRes = await fetch(
